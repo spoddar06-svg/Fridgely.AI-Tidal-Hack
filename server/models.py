@@ -2,47 +2,33 @@
 Pydantic models for data validation
 These define the structure of data we store in MongoDB
 """
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional, List, Annotated
 from datetime import datetime
 from bson import ObjectId
 
 
-class PyObjectId(ObjectId):
-    """Custom type for MongoDB ObjectId"""
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid ObjectId")
-        return ObjectId(v)
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema):
-        field_schema.update(type="string")
+# Simple string type for MongoDB IDs (Pydantic v2 compatible)
+PyObjectId = Annotated[str, Field(description="MongoDB ObjectId as string")]
 
 
 # User Model
 class User(BaseModel):
     """User account information"""
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+
+    id: Optional[str] = Field(alias="_id", default=None)
     username: str
     email: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
 
 
 # Inventory Item Model
 class InventoryItem(BaseModel):
     """Detected food item in user's inventory"""
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+
+    id: Optional[str] = Field(alias="_id", default=None)
     user_id: str
     item_name: str
     expiration_date: Optional[datetime] = None
@@ -53,26 +39,18 @@ class InventoryItem(BaseModel):
     category: Optional[str] = None  # dairy, produce, meat, etc.
     status: str = "active"  # active, consumed, wasted
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
-
 
 # Scan Model
 class Scan(BaseModel):
     """Record of a fridge scan"""
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+
+    id: Optional[str] = Field(alias="_id", default=None)
     user_id: str
     scanned_at: datetime = Field(default_factory=datetime.utcnow)
     items_detected: int = 0
     image_url: Optional[str] = None
     processing_time: Optional[float] = None  # in seconds
-
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str, datetime: lambda v: v.isoformat()}
 
 
 # Detection Result Model
