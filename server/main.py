@@ -57,7 +57,7 @@ async def lifespan(app: FastAPI):
         print(f"  ❌ Gemini helper failed to init: {e}")
         app.state.gemini_helper = None
 
-    # --- Food Detector (Gemini primary, Roboflow fallback) ---
+    # --- Food Detector (Roboflow primary, Gemini fallback) ---
     try:
         app.state.food_detector = FoodDetector(gemini_helper=app.state.gemini_helper)
     except Exception as e:

@@ -26,14 +26,14 @@ MOCK_FOOD_ITEMS = [
 
 
 class FoodDetector:
-    """Detect food items in images using Gemini Vision (primary) or Roboflow (fallback)"""
+    """Detect food items in images using Roboflow (primary) or Gemini Vision (fallback)"""
 
     def __init__(self, gemini_helper=None):
         self.gemini_helper = gemini_helper
         self.mock_mode = False
         self.roboflow_available = False
 
-        # Set up Roboflow as fallback
+        # Set up Roboflow as primary
         api_key = os.getenv('ROBOFLOW_API_KEY')
         if api_key and api_key not in ('YOUR_KEY_HERE', 'your_roboflow_api_key_here'):
             self.api_key = api_key
@@ -41,12 +41,12 @@ class FoodDetector:
             self.workflow_id = os.getenv('ROBOFLOW_WORKFLOW_ID', 'detect-count-and-visualize-5')
             self.api_url = os.getenv('ROBOFLOW_API_URL', 'https://serverless.roboflow.com')
             self.roboflow_available = True
-            print(f"  ✅ Roboflow workflow ready (fallback): {self.workspace}/{self.workflow_id}")
+            print(f"  ✅ Roboflow workflow ready (primary): {self.workspace}/{self.workflow_id}")
 
-        if gemini_helper and gemini_helper.model is not None:
-            print("  ✅ Food detector: Gemini Vision (primary)")
-        elif self.roboflow_available:
+        if self.roboflow_available:
             print("  ✅ Food detector: Roboflow (primary)")
+        elif gemini_helper and gemini_helper.model is not None:
+            print("  ✅ Food detector: Gemini Vision (primary)")
         else:
             print("  ⚠️  No detection backend — using mock mode")
             self.mock_mode = True
@@ -65,22 +65,20 @@ class FoodDetector:
         if self.mock_mode:
             return self._mock_detect(image_path)
 
-        # Try Gemini Vision first (more accurate)
-        if self.gemini_helper and self.gemini_helper.model is not None:
-            detections = self.gemini_helper.detect_all_food_items(image_path)
-            if detections:
-                return detections
-            print("⚠️  Gemini returned no results, trying fallback...")
-
-        # Fallback to Roboflow workflow
+        # Try Roboflow first (real object detection with bounding boxes)
         if self.roboflow_available:
             detections = self._roboflow_detect(image_path)
             if detections:
                 return detections
+            print("⚠️  Roboflow returned no results, trying Gemini fallback...")
 
-        # Last resort: mock detection so scans never silently fail
-        print("⚠️  All detectors returned empty, falling back to mock detection")
-        return self._mock_detect(image_path)
+        # Fallback to Gemini Vision
+        if self.gemini_helper and self.gemini_helper.model is not None:
+            detections = self.gemini_helper.detect_all_food_items(image_path)
+            if detections:
+                return detections
+
+        return []
 
     def _roboflow_detect(self, image_path: str) -> List[dict]:
         """Detect items using Roboflow workflow API"""
