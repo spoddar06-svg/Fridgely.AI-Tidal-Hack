@@ -122,8 +122,8 @@ async def scan_fridge(
 
         print(f"📸 Processing scan for user {user_id}: {file_path}")
 
-        # Step 1: Detect food items with YOLO
-        detections = app.state.food_detector.detect_items(file_path, confidence_threshold=0.5)
+        # Step 1: Detect food items with Roboflow model
+        detections = app.state.food_detector.detect_items(file_path, confidence_threshold=0.4)
 
         if not detections:
             raise HTTPException(status_code=400, detail="No items detected. Try getting closer or improving lighting.")

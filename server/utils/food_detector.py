@@ -1,44 +1,35 @@
 """
-Food detection using YOLO
-This module handles detecting food items in images
+Food detection using custom Roboflow model
+This module handles detecting food items in fridge images
 """
 import cv2
 import numpy as np
-from ultralytics import YOLO
-from typing import List, Tuple
+from roboflow import Roboflow
+from typing import List
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class FoodDetector:
-    """Detect food items in images using YOLOv8"""
+    """Detect food items in images using a custom Roboflow model"""
 
-    def __init__(self, model_path: str = "yolov8n.pt"):
-        """
-        Initialize the food detector
+    def __init__(self):
+        api_key = os.getenv('ROBOFLOW_API_KEY')
+        workspace = os.getenv('ROBOFLOW_WORKSPACE', 'security-detection')
+        project_name = os.getenv('ROBOFLOW_PROJECT', 'fridge-food-images-suzmb')
+        version = int(os.getenv('ROBOFLOW_VERSION', '1'))
 
-        Args:
-            model_path: Path to YOLO model weights
-                       Use 'yolov8n.pt' for nano (fastest)
-                       Use 'yolov8s.pt' for small (balanced)
-                       Use 'yolov8m.pt' for medium (more accurate)
-        """
-        try:
-            self.model = YOLO(model_path)
-            print(f"✅ Loaded YOLO model: {model_path}")
-        except Exception as e:
-            print(f"⚠️  Error loading YOLO model: {e}")
-            print("📥 Downloading default YOLOv8 model...")
-            self.model = YOLO("yolov8n.pt")
+        if not api_key:
+            raise RuntimeError("ROBOFLOW_API_KEY not set in .env")
 
-        # Food-related class names from COCO dataset
-        self.food_classes = {
-            'apple', 'banana', 'orange', 'broccoli', 'carrot',
-            'hot dog', 'pizza', 'donut', 'cake', 'sandwich',
-            'bottle', 'wine glass', 'cup', 'fork', 'knife',
-            'spoon', 'bowl'
-        }
+        rf = Roboflow(api_key=api_key)
+        project = rf.workspace(workspace).project(project_name)
+        self.model = project.version(version).model
+        print(f"✅ Loaded Roboflow model: {workspace}/{project_name} v{version}")
 
-    def detect_items(self, image_path: str, confidence_threshold: float = 0.5) -> List[dict]:
+    def detect_items(self, image_path: str, confidence_threshold: float = 0.4) -> List[dict]:
         """
         Detect food items in an image
 
@@ -50,30 +41,30 @@ class FoodDetector:
             List of detected items with bounding boxes and confidence scores
         """
         try:
-            # Run YOLO detection
-            results = self.model(image_path, conf=confidence_threshold)
+            result = self.model.predict(
+                image_path,
+                confidence=int(confidence_threshold * 100),
+                overlap=30,
+            ).json()
 
             detections = []
-            for result in results:
-                boxes = result.boxes
-                for box in boxes:
-                    # Get box coordinates
-                    x1, y1, x2, y2 = box.xyxy[0].tolist()
+            for pred in result.get('predictions', []):
+                # Roboflow returns center x, y, width, height
+                cx = int(pred['x'])
+                cy = int(pred['y'])
+                w = int(pred['width'])
+                h = int(pred['height'])
+                x1 = cx - w // 2
+                y1 = cy - h // 2
+                x2 = cx + w // 2
+                y2 = cy + h // 2
 
-                    # Get class name and confidence
-                    class_id = int(box.cls[0])
-                    class_name = self.model.names[class_id]
-                    confidence = float(box.conf[0])
-
-                    # Filter for food-related items or accept all with high confidence
-                    if confidence >= confidence_threshold:
-                        detection = {
-                            "item_name": class_name,
-                            "confidence": round(confidence, 3),
-                            "bounding_box": [round(x1), round(y1), round(x2), round(y2)],
-                            "is_food_related": class_name.lower() in self.food_classes
-                        }
-                        detections.append(detection)
+                detection = {
+                    "item_name": pred.get('class', 'unknown'),
+                    "confidence": round(float(pred.get('confidence', 0)), 3),
+                    "bounding_box": [x1, y1, x2, y2],
+                }
+                detections.append(detection)
 
             print(f"🔍 Detected {len(detections)} items in image")
             return detections
@@ -110,32 +101,3 @@ class FoodDetector:
         except Exception as e:
             print(f"❌ Error cropping image: {e}")
             return None
-
-
-# Utility function to draw detections on image (for debugging/demo)
-def draw_detections(image_path: str, detections: List[dict], output_path: str = None):
-    """
-    Draw bounding boxes on image
-
-    Args:
-        image_path: Path to original image
-        detections: List of detections from detect_items()
-        output_path: Where to save annotated image (optional)
-    """
-    image = cv2.imread(image_path)
-
-    for det in detections:
-        x1, y1, x2, y2 = det["bounding_box"]
-        label = f"{det['item_name']} {det['confidence']:.2f}"
-
-        # Draw box
-        cv2.rectangle(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-        # Draw label
-        cv2.putText(image, label, (x1, y1 - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-
-    if output_path:
-        cv2.imwrite(output_path, image)
-
-    return image
