@@ -118,7 +118,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     const { errorKind, error } = this.state;
     const content = errorContent[errorKind];
 
-    const mailtoSubject = encodeURIComponent('FridgeTrack Bug Report');
+    const mailtoSubject = encodeURIComponent('Fridgely.AI Bug Report');
     const mailtoBody = encodeURIComponent(
       `Error: ${error?.message ?? 'Unknown error'}\nType: ${errorKind}\nURL: ${window.location.href}\nTimestamp: ${new Date().toISOString()}`
     );

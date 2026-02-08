@@ -206,7 +206,7 @@ export default function Layout({ children }: LayoutProps) {
         <button
           type="button"
           onClick={() => navigate('/')}
-          aria-label="FridgeTrack — Go to dashboard"
+          aria-label="Fridgely.AI — Go to dashboard"
           className={[
             'flex items-center gap-2.5',
             'text-brand-700 hover:text-brand-800',
@@ -215,10 +215,10 @@ export default function Layout({ children }: LayoutProps) {
           ].join(' ')}
         >
           <LogoIcon />
-          <span className="text-lg font-bold tracking-tight">FridgeTrack</span>
+          <span className="text-xl font-semibold tracking-tight" style={{ fontFamily: 'var(--font-display)' }}>Fridgely.AI</span>
         </button>
         {/* sr-only app title for screen readers */}
-        <h1 className="sr-only">FridgeTrack</h1>
+        <h1 className="sr-only">Fridgely.AI</h1>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
