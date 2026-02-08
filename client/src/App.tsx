@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ToastProvider } from './components/ui/Toast';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import ScanPage from './pages/ScanPage';
@@ -9,16 +10,18 @@ import ShoppingListPage from './pages/ShoppingList';
 export default function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/scan" element={<ScanPage />} />
-            <Route path="/recipes" element={<RecipesPage />} />
-            <Route path="/shopping" element={<ShoppingListPage />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
+      <ToastProvider>
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/scan" element={<ScanPage />} />
+              <Route path="/recipes" element={<RecipesPage />} />
+              <Route path="/shopping" element={<ShoppingListPage />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }
