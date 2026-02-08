@@ -352,6 +352,18 @@
     border-radius: var(--radius-sm);
   }
 
+  /* ---- Toast slide-up animation ---- */
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 1rem);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
   /* Inset variant — for cards and filled elements */
   .focus-ring-inset:focus-visible {
     outline: 2px solid var(--ring-color);
