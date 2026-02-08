@@ -188,13 +188,8 @@ export default function ImageUpload({
         return;
       }
 
-      // Compress image (canvas API: max 1920px, 80% quality)
-      let processed: File;
-      try {
-        processed = await compressImage(file);
-      } catch {
-        processed = file; // fallback to original on failure
-      }
+      // Send original image — no compression so the model sees full quality
+      const processed = file;
 
       // Create preview
       const reader = new FileReader();
