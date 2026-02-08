@@ -43,10 +43,58 @@ async function uploadImage(
 ): Promise<InventoryItem[]> {
   console.log('Sending file to backend...', file.name, `(${(file.size / 1024).toFixed(1)} KB)`);
 
-  const response = await scanApi.uploadImage(file, 'demo_user', onProgress);
+  const raw: unknown = await scanApi.uploadImage(file, 'demo_user', onProgress);
+  const response = raw as Record<string, unknown>;
 
-  console.log('Scan complete:', response.total_items, 'items detected');
-  return response.items_detected.map(mapDetectionToItem);
+  // Debug: log full response so we can see the actual structure
+  console.log('🔍 Raw response:', response);
+  console.log('🔍 Response keys:', Object.keys(response));
+  console.log('🔍 typeof response:', typeof response);
+  console.log('🔍 items_detected:', response.items_detected);
+  console.log('🔍 data field:', response.data);
+
+  // Try multiple possible response structures
+  const detections: BackendDetectionResult[] = (() => {
+    // 1. Direct items_detected array (expected BackendScanResponse shape)
+    if (Array.isArray(response.items_detected)) {
+      console.log('✅ Found items at response.items_detected');
+      return response.items_detected as BackendDetectionResult[];
+    }
+    // 2. Wrapped in .data (axios double-wrap or envelope)
+    const data = response.data as Record<string, unknown> | undefined;
+    if (data && typeof data === 'object') {
+      if (Array.isArray(data.items_detected)) {
+        console.log('✅ Found items at response.data.items_detected');
+        return data.items_detected as BackendDetectionResult[];
+      }
+      if (Array.isArray(data.items)) {
+        console.log('✅ Found items at response.data.items');
+        return data.items as BackendDetectionResult[];
+      }
+    }
+    // 3. Direct .items array
+    if (Array.isArray(response.items)) {
+      console.log('✅ Found items at response.items');
+      return response.items as BackendDetectionResult[];
+    }
+    // 4. Response itself is an array
+    if (Array.isArray(raw)) {
+      console.log('✅ Response itself is an array');
+      return raw as BackendDetectionResult[];
+    }
+    console.warn('⚠️ Could not find detection items in response:', response);
+    return [];
+  })();
+
+  console.log('🔍 Detections found:', detections.length, detections);
+
+  const items = detections.map((det, i) => {
+    console.log(`🔍 Mapping item ${i}:`, det);
+    return mapDetectionToItem(det, i);
+  });
+
+  console.log('🔍 Mapped items:', items.length, items);
+  return items;
 }
 
 /* ---- Icons (inline SVGs) ---- */
@@ -217,6 +265,7 @@ export default function ScanPage() {
     let succeeded = false;
 
     try {
+      console.log('🔍 [handleUpload] Starting upload...');
       const items = await uploadImage(file, (pct) => {
         if (!mountedRef.current) return;
         setProgress(pct);
@@ -225,14 +274,16 @@ export default function ScanPage() {
         }
       });
 
-      if (!mountedRef.current) return;
+      console.log('🔍 [handleUpload] uploadImage returned:', items?.length, 'items', items);
 
       if (items.length === 0) {
+        console.log('🔍 [handleUpload] No items, setting error');
         setErrorType('no_items');
         setErrorDetail('We couldn\u2019t find any food items. Try better lighting or a different angle.');
         return; // finally will set status to 'error'
       }
 
+      console.log('🔍 [handleUpload] Setting detectedItems and status=success');
       setDetectedItems(items);
       succeeded = true;
       setStatus('success');
@@ -266,9 +317,11 @@ export default function ScanPage() {
     } finally {
       if (!mountedRef.current) return;
       setProgress(0);
+      console.log('🔍 [handleUpload] finally block — succeeded:', succeeded);
       // Safety net: if we didn't reach success, force the error screen
       // so the UI never stays stuck on 'uploading' or 'processing'.
       if (!succeeded) {
+        console.log('🔍 [handleUpload] finally: setting status=error (succeeded was false)');
         setStatus('error');
       }
     }
