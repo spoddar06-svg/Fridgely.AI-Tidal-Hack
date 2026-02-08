@@ -172,10 +172,10 @@ function Toast({
       ].join(' ')}
       role="status"
     >
-      <span className="text-success-light shrink-0">
+      <span className="text-white shrink-0">
         <CheckIcon />
       </span>
-      <span className="text-sm font-medium">
+      <span className="text-sm font-medium text-white">
         Marked &ldquo;{recipeName}&rdquo; as cooked!
       </span>
     </div>
@@ -297,7 +297,7 @@ export default function RecipesPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
             Recipes to Save Your Food
           </h1>
-          <p className="mt-1 text-sky-100">
+          <p className="mt-1 text-white">
             AI-generated meals using what&apos;s already in your fridge.
           </p>
         </div>
@@ -324,7 +324,7 @@ export default function RecipesPage() {
             'p-4',
           ].join(' ')}
         >
-          <div className="flex items-center gap-2.5 text-slate-200">
+          <div className="flex items-center gap-2.5 text-white">
             <FilterIcon />
             <span className="text-sm font-medium text-white">
               Filters
@@ -369,23 +369,24 @@ export default function RecipesPage() {
 
           {/* Difficulty dropdown */}
           <div className="flex items-center gap-2 md:ml-auto">
-            <span className="text-sm text-slate-200">Difficulty:</span>
+            <span className="text-sm text-white">Difficulty:</span>
             <select
               value={difficulty}
               onChange={(e) =>
                 setDifficulty(e.target.value as DifficultyFilter)
               }
+              style={{ color: 'white' }}
               className={[
-                'rounded-lg border border-neutral-200 bg-slate-950/60 backdrop-blur-2xl',
+                'rounded-lg border border-neutral-200 bg-slate-950 backdrop-blur-2xl',
                 'px-3 py-1.5 text-sm text-white',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
                 'cursor-pointer',
               ].join(' ')}
             >
-              <option value="all">All</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+              <option value="all" style={{ color: 'white', backgroundColor: '#020617' }}>All</option>
+              <option value="easy" style={{ color: 'white', backgroundColor: '#020617' }}>Easy</option>
+              <option value="medium" style={{ color: 'white', backgroundColor: '#020617' }}>Medium</option>
+              <option value="hard" style={{ color: 'white', backgroundColor: '#020617' }}>Hard</option>
             </select>
           </div>
         </section>
@@ -393,7 +394,7 @@ export default function RecipesPage() {
 
       {/* ── Result count ── */}
       {showFilters && (
-        <p className="text-sm text-slate-200">
+        <p className="text-sm text-white">
           Showing{' '}
           <span className="font-semibold text-white">
             {filtered.length}
@@ -406,7 +407,7 @@ export default function RecipesPage() {
                 setExpiringOnly(false);
                 setDifficulty('all');
               }}
-              className="ml-2 text-brand-600 hover:text-brand-700 font-medium cursor-pointer"
+              className="ml-2 text-white hover:text-white font-medium cursor-pointer"
             >
               Clear filters
             </button>
@@ -416,7 +417,7 @@ export default function RecipesPage() {
 
       {/* ── Inventory info ── */}
       {!inventoryLoading && status === 'empty' && itemNames.all.length > 0 && (
-        <p className="text-sm text-slate-200">
+        <p className="text-sm text-white">
           {itemNames.expiring.length > 0
             ? `${itemNames.expiring.length} item${itemNames.expiring.length === 1 ? '' : 's'} expiring soon — recipes will prioritize these.`
             : `${itemNames.all.length} item${itemNames.all.length === 1 ? '' : 's'} in your fridge.`}

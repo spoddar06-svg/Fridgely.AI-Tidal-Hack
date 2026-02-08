@@ -138,11 +138,11 @@ export default function RecipeCard({
   const expiringCount = recipe.uses_expiring_items.length;
 
   return (
-    <Card variant="default" padding="none" className="hover:shadow-medium">
+    <Card variant="default" padding="none" className="hover:shadow-medium bg-slate-900 border-white/10">
       {/* ── Header ── */}
       <div className="p-5 pb-0">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-lg font-semibold text-neutral-900 leading-snug">
+          <h3 className="text-lg font-semibold text-white leading-snug">
             {recipe.name}
           </h3>
           {recipe.difficulty && (
@@ -156,7 +156,7 @@ export default function RecipeCard({
           )}
         </div>
         {recipe.description && (
-          <p className="mt-1.5 text-sm text-neutral-500 line-clamp-2">
+          <p className="mt-1.5 text-sm text-white/80 line-clamp-2">
             {recipe.description}
           </p>
         )}
@@ -164,12 +164,12 @@ export default function RecipeCard({
 
       {/* ── Metadata ── */}
       <div className="flex items-center gap-4 px-5 pt-3">
-        <span className="inline-flex items-center gap-1.5 text-sm text-neutral-500">
+        <span className="inline-flex items-center gap-1.5 text-sm text-white/70">
           <ClockIcon />
           {recipe.prep_time_minutes} min
         </span>
         {recipe.servings != null && (
-          <span className="inline-flex items-center gap-1.5 text-sm text-neutral-500">
+          <span className="inline-flex items-center gap-1.5 text-sm text-white/70">
             <ServingsIcon />
             {recipe.servings} {recipe.servings === 1 ? 'serving' : 'servings'}
           </span>
@@ -177,12 +177,13 @@ export default function RecipeCard({
       </div>
 
       {/* ── Expiring items callout ── */}
+      {/* CHANGED: bg-success-light to a dark green glass effect so white text is visible */}
       {expiringCount > 0 && (
-        <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-success-light px-3 py-2.5">
-          <span className="text-success-dark shrink-0">
+        <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-emerald-900/30 border border-emerald-500/20 px-3 py-2.5">
+          <span className="text-white shrink-0">
             <SparkleIcon />
           </span>
-          <span className="text-sm font-medium text-success-dark">
+          <span className="text-sm font-medium text-white">
             Uses {expiringCount} expiring{' '}
             {expiringCount === 1 ? 'item' : 'items'}
           </span>
@@ -191,7 +192,7 @@ export default function RecipeCard({
 
       {/* ── Ingredients ── */}
       <div className="px-5 pt-4">
-        <h4 className="text-sm font-semibold text-neutral-700 mb-2.5">
+        <h4 className="text-sm font-semibold text-white mb-2.5">
           Ingredients
         </h4>
         <ul className="space-y-2">
@@ -208,8 +209,8 @@ export default function RecipeCard({
               <span
                 className={
                   ing.in_inventory
-                    ? 'text-brand-600 shrink-0'
-                    : 'text-neutral-300 shrink-0'
+                    ? 'text-white shrink-0'
+                    : 'text-white/30 shrink-0'
                 }
               >
                 {ing.in_inventory ? (
@@ -218,7 +219,7 @@ export default function RecipeCard({
                   <EmptyCircleIcon />
                 )}
               </span>
-              <span className="text-sm text-neutral-700">
+              <span className="text-sm text-white">
                 {ing.amount}
                 {ing.unit ? ` ${ing.unit}` : ''}{' '}
                 <span className="font-medium">{ing.name}</span>
@@ -235,16 +236,16 @@ export default function RecipeCard({
       >
         <div className="overflow-hidden">
           <div className="px-5 pt-4 pb-1">
-            <h4 className="text-sm font-semibold text-neutral-700 mb-3">
+            <h4 className="text-sm font-semibold text-white mb-3">
               Instructions
             </h4>
             <ol className="space-y-3">
               {recipe.instructions.map((step, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-brand-100 text-brand-700 text-xs font-bold">
+                  <span className="shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-white/10 text-white text-xs font-bold border border-white/20">
                     {i + 1}
                   </span>
-                  <p className="text-sm text-neutral-600 leading-relaxed pt-0.5">
+                  <p className="text-sm text-white/90 leading-relaxed pt-0.5">
                     {step}
                   </p>
                 </li>
@@ -255,10 +256,11 @@ export default function RecipeCard({
       </div>
 
       {/* ── Footer ── */}
+      {/* CHANGED: bg-neutral-50 to bg-white/5 so "View Recipe" button (white text) is visible */}
       <div
         className={[
           'flex items-center gap-3 px-5 py-4 mt-4',
-          'border-t border-neutral-200 bg-neutral-50',
+          'border-t border-white/10 bg-white/5',
           'rounded-b-xl',
           onSelectRecipe ? 'justify-between' : 'justify-start',
         ].join(' ')}
@@ -268,6 +270,7 @@ export default function RecipeCard({
           size="sm"
           onClick={() => setExpanded((prev) => !prev)}
           rightIcon={<ChevronIcon expanded={expanded} />}
+          className="text-white border-white/20 hover:bg-white/10"
         >
           {expanded ? 'Hide Steps' : 'View Recipe'}
         </Button>
