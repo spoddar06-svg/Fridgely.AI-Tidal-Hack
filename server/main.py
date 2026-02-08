@@ -98,8 +98,8 @@ async def health_check():
 # ==================== IMAGE SCANNING ====================
 @app.post("/api/scan", response_model=ScanResponse)
 async def scan_fridge(
-    file: UploadFile = File(...),
-    user_id: str = Form(...)
+    file: UploadFile = File(..., alias="image"),  # Accept 'image' from frontend
+    user_id: str = Form(default="demo_user")      # Default value if not provided
 ):
     """
     Scan a fridge image to detect food items and expiration dates
