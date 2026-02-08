@@ -28,10 +28,10 @@ interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
 /* ---- Style maps ---- */
 
 const variantStyles: Record<CardVariant, string> = {
-  default:  'bg-white border border-neutral-200',
-  outlined: 'bg-transparent border border-neutral-300',
-  elevated: 'bg-white border border-neutral-100 shadow-medium',
-  filled:   'bg-neutral-100 border border-transparent',
+  default:  'bg-slate-950/60 backdrop-blur-2xl border border-white/20',
+  outlined: 'bg-transparent border border-white/30',
+  elevated: 'bg-slate-950/60 backdrop-blur-2xl border border-white/20 shadow-medium',
+  filled:   'bg-slate-950/30 backdrop-blur-sm border border-transparent',
 };
 
 const paddingStyles: Record<CardPadding, string> = {
@@ -112,11 +112,11 @@ export function CardHeader({
       {...rest}
     >
       <div className="min-w-0">
-        <h3 className="text-lg font-semibold text-neutral-900 truncate">
+        <h3 className="text-lg font-semibold text-white truncate" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
           {title}
         </h3>
         {subtitle && (
-          <p className="mt-0.5 text-sm text-neutral-500">{subtitle}</p>
+          <p className="mt-0.5 text-sm text-sky-100 drop-shadow-sm">{subtitle}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -130,7 +130,7 @@ export function CardBody({
   ...rest
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`text-neutral-700 ${className}`} {...rest}>
+    <div className={`text-sky-100 drop-shadow-sm ${className}`} {...rest}>
       {children}
     </div>
   );
@@ -145,7 +145,7 @@ export function CardFooter({
   return (
     <div
       className={[
-        'flex items-center gap-3 mt-5 pt-4 border-t border-neutral-200',
+        'flex items-center gap-3 mt-5 pt-4 border-t border-white/20',
         footerAlign[align],
         className,
       ].join(' ')}

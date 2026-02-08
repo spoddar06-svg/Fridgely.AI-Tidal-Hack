@@ -49,33 +49,33 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<Variant, string> = {
   primary: [
-    'bg-brand-600 text-white',
-    'hover:bg-brand-700',
-    'active:bg-brand-800',
+    'bg-blue-600 text-white',
+    'hover:bg-blue-700',
+    'active:bg-blue-800',
   ].join(' '),
 
   secondary: [
-    'bg-brand-100 text-brand-800',
-    'hover:bg-brand-200',
-    'active:bg-brand-300',
+    'bg-blue-100 text-blue-900',
+    'hover:bg-blue-200',
+    'active:bg-blue-300',
   ].join(' '),
 
   outline: [
-    'border border-neutral-300 bg-transparent text-neutral-800',
-    'hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50',
-    'active:bg-brand-100',
+    'border border-white/30 bg-transparent text-white',
+    'hover:border-blue-400 hover:text-blue-200 hover:bg-blue-600/20',
+    'active:bg-blue-600/30',
   ].join(' '),
 
   ghost: [
-    'bg-transparent text-neutral-700',
-    'hover:bg-neutral-100 hover:text-neutral-900',
-    'active:bg-neutral-200',
+    'bg-blue-600 text-white',
+    'hover:bg-blue-700',
+    'active:bg-blue-800',
   ].join(' '),
 
   danger: [
-    'bg-danger text-white',
-    'hover:bg-danger-dark',
-    'active:brightness-90',
+    'bg-red-600 text-white',
+    'hover:bg-red-700',
+    'active:bg-red-800',
   ].join(' '),
 };
 

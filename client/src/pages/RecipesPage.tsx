@@ -110,7 +110,7 @@ function CheckIcon() {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5 animate-pulse">
+    <div className="rounded-xl border border-neutral-200 bg-slate-950/60 backdrop-blur-2xl p-5 animate-pulse">
       {/* Title row */}
       <div className="flex items-start justify-between gap-3">
         <div className="h-5 w-3/5 rounded bg-neutral-200" />
@@ -294,10 +294,10 @@ export default function RecipesPage() {
       {/* ── Header ── */}
       <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
             Recipes to Save Your Food
           </h1>
-          <p className="mt-1 text-neutral-500">
+          <p className="mt-1 text-sky-100">
             AI-generated meals using what&apos;s already in your fridge.
           </p>
         </div>
@@ -320,13 +320,13 @@ export default function RecipesPage() {
         <section
           className={[
             'flex flex-col md:flex-row md:items-center gap-4',
-            'rounded-xl border border-neutral-200 bg-white',
+            'rounded-xl border border-neutral-200 bg-slate-950/60 backdrop-blur-2xl',
             'p-4',
           ].join(' ')}
         >
-          <div className="flex items-center gap-2.5 text-neutral-500">
+          <div className="flex items-center gap-2.5 text-slate-200">
             <FilterIcon />
-            <span className="text-sm font-medium text-neutral-700">
+            <span className="text-sm font-medium text-white">
               Filters
             </span>
           </div>
@@ -356,28 +356,28 @@ export default function RecipesPage() {
                 aria-hidden="true"
                 className={[
                   'pointer-events-none inline-block h-5 w-5',
-                  'rounded-full bg-white shadow-sm',
+                  'rounded-full bg-slate-950/60 backdrop-blur-2xl shadow-sm',
                   'transform transition-transform duration-200 ease-in-out',
                   expiringOnly ? 'translate-x-5' : 'translate-x-0',
                 ].join(' ')}
               />
             </button>
-            <span className="text-sm text-neutral-700">
+            <span className="text-sm text-white">
               Only recipes using expiring items
             </span>
           </label>
 
           {/* Difficulty dropdown */}
           <div className="flex items-center gap-2 md:ml-auto">
-            <span className="text-sm text-neutral-500">Difficulty:</span>
+            <span className="text-sm text-slate-200">Difficulty:</span>
             <select
               value={difficulty}
               onChange={(e) =>
                 setDifficulty(e.target.value as DifficultyFilter)
               }
               className={[
-                'rounded-lg border border-neutral-200 bg-white',
-                'px-3 py-1.5 text-sm text-neutral-700',
+                'rounded-lg border border-neutral-200 bg-slate-950/60 backdrop-blur-2xl',
+                'px-3 py-1.5 text-sm text-white',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
                 'cursor-pointer',
               ].join(' ')}
@@ -393,9 +393,9 @@ export default function RecipesPage() {
 
       {/* ── Result count ── */}
       {showFilters && (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-slate-200">
           Showing{' '}
-          <span className="font-semibold text-neutral-900">
+          <span className="font-semibold text-white">
             {filtered.length}
           </span>{' '}
           {filtered.length === 1 ? 'recipe' : 'recipes'}
@@ -416,7 +416,7 @@ export default function RecipesPage() {
 
       {/* ── Inventory info ── */}
       {!inventoryLoading && status === 'empty' && itemNames.all.length > 0 && (
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-slate-200">
           {itemNames.expiring.length > 0
             ? `${itemNames.expiring.length} item${itemNames.expiring.length === 1 ? '' : 's'} expiring soon — recipes will prioritize these.`
             : `${itemNames.all.length} item${itemNames.all.length === 1 ? '' : 's'} in your fridge.`}

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/ui/Toast';
 import Layout from './components/layout/Layout';
+import WinterBackground from './components/WinterBackground';
 import {
   StatsCardSkeleton,
   InventoryItemSkeleton,
@@ -59,6 +60,7 @@ function PageFallback() {
 export default function App() {
   return (
     <ErrorBoundary>
+      <WinterBackground />
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
           <BrowserRouter>

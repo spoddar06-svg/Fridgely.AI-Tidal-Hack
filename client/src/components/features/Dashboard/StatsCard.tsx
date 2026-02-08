@@ -1,4 +1,5 @@
 import { memo, type HTMLAttributes, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
 
 /* ---- Types ---- */
 
@@ -22,17 +23,17 @@ interface StatsCardProps extends HTMLAttributes<HTMLDivElement> {
 /* ---- Style maps ---- */
 
 const iconBgMap: Record<StatsColor, string> = {
-  brand:   'bg-brand-100 text-brand-600',
-  success: 'bg-success-light text-success-dark',
-  warning: 'bg-warning-light text-warning-dark',
-  danger:  'bg-danger-light text-danger-dark',
+  brand:   'bg-blue-600 text-white',
+  success: 'bg-green-600 text-white',
+  warning: 'bg-yellow-600 text-white',
+  danger:  'bg-red-600 text-white',
 };
 
 const valueColorMap: Record<StatsColor, string> = {
-  brand:   'text-brand-700',
-  success: 'text-success-dark',
-  warning: 'text-warning-dark',
-  danger:  'text-danger-dark',
+  brand:   'text-white',
+  success: 'text-white',
+  warning: 'text-white',
+  danger:  'text-white',
 };
 
 const trendStyles: Record<'up' | 'down', string> = {
@@ -113,9 +114,8 @@ function StatsCard({
     return (
       <div
         className={[
-          'rounded-xl border border-neutral-200 bg-white p-5',
+          'rounded-xl border border-white/20 bg-slate-950/60 backdrop-blur-2xl p-5',
           'transition-all duration-200 ease-in-out',
-          'hover:-translate-y-0.5 hover:shadow-medium',
           className,
         ].join(' ')}
         {...rest}
@@ -132,11 +132,19 @@ function StatsCard({
   }
 
   return (
-    <div
+    <motion.div
+      whileHover={{
+        scale: 1.05,
+      }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+      }}
       className={[
-        'rounded-xl border border-neutral-200 bg-white p-5',
+        'rounded-xl border border-white/20 bg-slate-950/60 backdrop-blur-2xl p-5',
         'transition-all duration-200 ease-in-out',
-        'hover:-translate-y-0.5 hover:shadow-medium',
+        'hover:shadow-[0_0_20px_rgba(255,223,0,0.6),0_0_40px_rgba(0,255,255,0.3)]',
         className,
       ].join(' ')}
       {...rest}
@@ -147,10 +155,10 @@ function StatsCard({
           <p className={[
             'text-3xl font-bold tracking-tight',
             valueColorMap[color],
-          ].join(' ')}>
+          ].join(' ')} style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
             {value}
           </p>
-          <p className="mt-1 text-sm text-neutral-600">{label}</p>
+          <p className="mt-1 text-sm text-sky-100 drop-shadow-sm">{label}</p>
 
           {/* Trend */}
           {trend && (
@@ -186,7 +194,7 @@ function StatsCard({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

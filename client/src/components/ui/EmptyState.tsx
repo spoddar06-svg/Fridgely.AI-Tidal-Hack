@@ -38,7 +38,7 @@ export default function EmptyState({
           className={[
             'mb-5 flex items-center justify-center',
             'w-16 h-16 rounded-full',
-            'bg-brand-100 text-brand-600',
+            'bg-blue-600 text-white',
           ].join(' ')}
           aria-hidden="true"
         >
@@ -47,11 +47,11 @@ export default function EmptyState({
       ) : null}
 
       {/* Title */}
-      <h3 className="text-lg font-semibold text-neutral-900">{title}</h3>
+      <h3 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>{title}</h3>
 
       {/* Description */}
       {description && (
-        <p className="mt-2 max-w-sm text-sm text-neutral-500 leading-relaxed">
+        <p className="mt-2 max-w-sm text-sm text-sky-100 leading-relaxed drop-shadow-sm">
           {description}
         </p>
       )}

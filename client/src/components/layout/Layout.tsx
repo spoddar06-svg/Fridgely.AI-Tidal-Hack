@@ -187,7 +187,7 @@ export default function Layout({ children }: LayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-dvh flex flex-col bg-neutral-50">
+    <div className="min-h-dvh flex flex-col">
       {/* ── Skip link ── */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -199,7 +199,7 @@ export default function Layout({ children }: LayoutProps) {
           'sticky top-0 z-40',
           'flex items-center justify-between',
           'h-16 px-4 sm:px-6 lg:px-8',
-          'bg-white border-b border-neutral-200',
+          'bg-white/90 backdrop-blur-md border-b border-white/20',
         ].join(' ')}
       >
         {/* Logo */}
@@ -237,7 +237,7 @@ export default function Layout({ children }: LayoutProps) {
                   'cursor-pointer',
                   active
                     ? 'bg-brand-100 text-brand-700'
-                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
+                    : 'text-slate-300 hover:bg-slate-800/30 hover:text-white',
                 ].join(' ')}
                 aria-current={active ? 'page' : undefined}
               >
@@ -268,7 +268,7 @@ export default function Layout({ children }: LayoutProps) {
         className={[
           'fixed bottom-0 inset-x-0 z-40',
           'flex md:hidden',
-          'bg-white border-t border-neutral-200',
+          'bg-white/90 backdrop-blur-md border-t border-white/20',
           'pb-[env(safe-area-inset-bottom)]',
         ].join(' ')}
         aria-label="Mobile navigation"
@@ -289,7 +289,7 @@ export default function Layout({ children }: LayoutProps) {
                 'cursor-pointer',
                 active
                   ? 'text-brand-600'
-                  : 'text-neutral-400 active:text-neutral-600',
+                  : 'text-slate-300 active:text-slate-300',
               ].join(' ')}
               aria-current={active ? 'page' : undefined}
             >

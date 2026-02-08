@@ -138,7 +138,7 @@ function SkeletonCard() {
       className={[
         'flex items-center gap-4 p-4 rounded-xl',
         'border border-l-4 border-neutral-200 border-l-neutral-300',
-        'bg-white animate-pulse',
+        'bg-slate-950/60 backdrop-blur-2xl animate-pulse',
       ].join(' ')}
     >
       <div className="min-w-0 flex-1 space-y-2.5">
@@ -266,10 +266,10 @@ export default function ScanPage() {
                 strokeLinecap="round"
               />
             </svg>
-            <p className="text-sm font-medium text-neutral-600">
+            <p className="text-sm font-medium text-slate-200">
               Analyzing your fridge…
             </p>
-            <p className="text-xs text-neutral-400">
+            <p className="text-xs text-slate-200">
               This usually takes a few seconds
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function ScanPage() {
 
         {/* Detected items */}
         <section>
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+          <h2 className="text-lg font-semibold text-white mb-4" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
             Detected Items
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -370,10 +370,10 @@ export default function ScanPage() {
 
           {/* Message */}
           <div className="text-center max-w-sm">
-            <h2 className="text-lg font-semibold text-neutral-900">
+            <h2 className="text-lg font-semibold text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
               {err.title}
             </h2>
-            <p className="mt-2 text-sm text-neutral-500 leading-relaxed">
+            <p className="mt-2 text-sm text-sky-100 leading-relaxed">
               {errorDetail ?? err.description}
             </p>
           </div>
@@ -405,7 +405,7 @@ export default function ScanPage() {
 
       {/* Tips */}
       <section>
-        <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+        <h2 className="text-sm font-semibold text-sky-100 uppercase tracking-wider mb-3" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
           Tips for best results
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -414,13 +414,13 @@ export default function ScanPage() {
               key={tip.title}
               className={[
                 'flex items-start gap-3 p-4',
-                'rounded-xl border border-neutral-200 bg-white',
+                'rounded-xl border border-neutral-200 bg-slate-950/60 backdrop-blur-2xl',
               ].join(' ')}
             >
               <span className="shrink-0 text-brand-500 mt-0.5">{tip.icon}</span>
               <div>
-                <p className="text-sm font-medium text-neutral-900">{tip.title}</p>
-                <p className="mt-0.5 text-xs text-neutral-500">{tip.description}</p>
+                <p className="text-sm font-medium text-white">{tip.title}</p>
+                <p className="mt-0.5 text-xs text-slate-200">{tip.description}</p>
               </div>
             </div>
           ))}
@@ -435,10 +435,10 @@ export default function ScanPage() {
 function PageHeader() {
   return (
     <section>
-      <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+      <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
         Scan Your Fridge
       </h1>
-      <p className="mt-1 text-neutral-500">
+      <p className="mt-1 text-sky-100">
         Take a photo of your fridge and we&apos;ll detect the items inside.
       </p>
     </section>

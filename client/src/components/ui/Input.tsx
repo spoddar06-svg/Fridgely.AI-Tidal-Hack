@@ -77,7 +77,7 @@ export default function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="mb-1.5 text-sm font-medium text-neutral-700"
+          className="mb-1.5 text-sm font-medium text-white drop-shadow-sm"
         >
           {label}
         </label>
@@ -89,7 +89,7 @@ export default function Input({
         {leftIcon && (
           <span
             className={[
-              'absolute top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400',
+              'absolute top-1/2 -translate-y-1/2 pointer-events-none text-slate-300',
               iconSizeStyles[inputSize].left,
             ].join(' ')}
             aria-hidden="true"
@@ -104,10 +104,10 @@ export default function Input({
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={[
-            'border bg-white text-neutral-900 placeholder:text-neutral-400',
+            'border text-white placeholder:text-slate-400 bg-slate-900/50 backdrop-blur-lg',
             'transition-all duration-200 ease-in-out',
             'w-full',
-            disabled && 'opacity-50 cursor-not-allowed bg-neutral-100',
+            disabled && 'opacity-50 cursor-not-allowed bg-slate-900/30',
             variantStyles[resolvedVariant],
             sizeStyles[inputSize],
             leftIcon && iconSizeStyles[inputSize].inputLeft,

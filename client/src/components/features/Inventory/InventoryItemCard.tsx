@@ -1,4 +1,5 @@
 import { memo, useState } from 'react';
+import { motion } from 'framer-motion';
 import type {
   ExpirationUrgency,
   ExpirationUrgencyLevel,
@@ -134,7 +135,7 @@ function InventoryItemCard({
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div
+    <motion.div
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
       onClick={onClick}
@@ -148,23 +149,31 @@ function InventoryItemCard({
             }
           : undefined
       }
+      whileHover={{
+        scale: 1.05,
+      }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 25,
+      }}
       className={[
         // base
         'relative flex items-center gap-4 p-4 rounded-xl',
         'border border-l-4',
         'transition-all duration-200 ease-in-out',
+        // frosted glass effect with stronger background
+        'bg-slate-950/60 backdrop-blur-2xl border-white/20',
         // urgency
         borderColorMap[urgency.level],
-        bgMap[urgency.level],
         // interactive
         isClickable && [
           'cursor-pointer',
-          'hover:shadow-medium hover:border-brand-300',
+          'hover:shadow-[0_0_20px_rgba(255,223,0,0.6),0_0_40px_rgba(0,255,255,0.3)]',
           'active:scale-[0.99]',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
         ].join(' '),
         // expired background
-        urgency.level !== 'expired' && 'border-neutral-200',
         urgency.level === 'expired' && 'border-danger/20',
       ]
         .filter(Boolean)
@@ -182,9 +191,9 @@ function InventoryItemCard({
         ) : (
           <div
             className={[
-              'w-12 h-12 rounded-lg border border-neutral-200',
+              'w-12 h-12 rounded-lg border border-white/20',
               'flex items-center justify-center',
-              'bg-brand-100 text-brand-600 font-bold text-lg',
+              'bg-brand-400/30 text-brand-200 font-bold text-lg',
               'select-none uppercase',
             ].join(' ')}
             aria-hidden="true"
@@ -199,7 +208,8 @@ function InventoryItemCard({
         {/* Top row: name + confidence badge */}
         <div className="flex items-center gap-2">
           <h3
-            className="text-base font-semibold capitalize truncate text-neutral-900"
+            className="text-base font-semibold capitalize truncate text-white"
+            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}
           >
             {item.item_name}
           </h3>
@@ -220,19 +230,19 @@ function InventoryItemCard({
 
         {/* Bottom row: date + category */}
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="inline-flex items-center gap-1 text-sm text-neutral-500">
+          <span className="inline-flex items-center gap-1 text-sm text-sky-100 drop-shadow-sm">
             <CalendarIcon />
             {formatDate(item.expiration_date)}
           </span>
 
           {item.category && (
-            <span className="text-xs font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full capitalize">
+            <span className="text-xs font-medium text-sky-100 bg-slate-950/50 px-2 py-0.5 rounded-full capitalize drop-shadow-sm">
               {item.category}
             </span>
           )}
 
           {item.quantity && item.quantity > 1 && (
-            <span className="text-xs text-neutral-400">
+            <span className="text-xs text-sky-100 drop-shadow-sm">
               Qty: {item.quantity}
             </span>
           )}
@@ -252,7 +262,7 @@ function InventoryItemCard({
               'w-6 h-6 rounded-full border-2 flex items-center justify-center',
               'transition-all duration-200 cursor-pointer',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
-              'border-neutral-300 hover:border-danger hover:bg-danger-light hover:text-danger',
+              'border-white/40 hover:border-red-400 hover:bg-red-600/20 hover:text-red-300',
             ].join(' ')}
             aria-label="Remove item"
           >
@@ -276,7 +286,7 @@ function InventoryItemCard({
               : urgency.label}
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

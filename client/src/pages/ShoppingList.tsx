@@ -169,9 +169,9 @@ const ShoppingItemRow = memo(function ShoppingItemRow({ item, onToggle, onDelete
       className={[
         'group flex items-center gap-3',
         'px-4 py-3 rounded-lg',
-        'bg-white border border-neutral-200',
+        'bg-slate-950/60 backdrop-blur-2xl border border-white/20',
         'transition-all duration-200 ease-in-out',
-        item.purchased && 'bg-neutral-50 border-neutral-100',
+        item.purchased && 'bg-slate-900/30 border-white/10',
       ]
         .filter(Boolean)
         .join(' ')}
@@ -191,8 +191,8 @@ const ShoppingItemRow = memo(function ShoppingItemRow({ item, onToggle, onDelete
             'w-5 h-5 rounded border-2',
             'transition-all duration-200',
             item.purchased
-              ? 'bg-brand-500 border-brand-500 text-white'
-              : 'border-neutral-300 hover:border-brand-400',
+              ? 'bg-blue-600 border-blue-600 text-white'
+              : 'border-white/40 hover:border-blue-400',
           ].join(' ')}
         >
           {item.purchased && <CheckIcon />}
@@ -202,11 +202,11 @@ const ShoppingItemRow = memo(function ShoppingItemRow({ item, onToggle, onDelete
       {/* Item name */}
       <span
         className={[
-          'flex-1 min-w-0 text-sm font-medium truncate',
+          'flex-1 min-w-0 text-sm font-medium truncate drop-shadow-sm',
           'transition-all duration-200',
           item.purchased
-            ? 'line-through text-neutral-400'
-            : 'text-neutral-900',
+            ? 'line-through text-slate-300'
+            : 'text-white',
         ].join(' ')}
       >
         {item.item_name}
@@ -222,9 +222,9 @@ const ShoppingItemRow = memo(function ShoppingItemRow({ item, onToggle, onDelete
       {/* Category label */}
       <span
         className={[
-          'shrink-0 text-xs capitalize',
+          'shrink-0 text-xs capitalize drop-shadow-sm',
           'transition-colors duration-200',
-          item.purchased ? 'text-neutral-300' : 'text-neutral-400',
+          item.purchased ? 'text-slate-300' : 'text-slate-300',
         ].join(' ')}
       >
         {shopCat}
@@ -238,7 +238,7 @@ const ShoppingItemRow = memo(function ShoppingItemRow({ item, onToggle, onDelete
         className={[
           'shrink-0 p-2 rounded-md min-h-[44px] min-w-[44px]',
           'flex items-center justify-center',
-          'text-neutral-300 hover:text-danger hover:bg-danger-light',
+          'text-slate-300 hover:text-red-300 hover:bg-red-600/20',
           'transition-all duration-200',
           'opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100',
           'cursor-pointer',
@@ -345,10 +345,10 @@ export default function ShoppingListPage() {
       {/* ── Header ── */}
       <section className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
             Shopping List
           </h1>
-          <p className="mt-1 text-neutral-500">
+          <p className="mt-1 text-sky-100 drop-shadow-sm">
             {items.length} {items.length === 1 ? 'item' : 'items'}
             {purchasedCount > 0 && ` \u00b7 ${purchasedCount} purchased`}
           </p>
@@ -396,12 +396,12 @@ export default function ShoppingListPage() {
               className={[
                 'flex items-center gap-1.5',
                 'px-3.5 py-2 rounded-lg',
-                'text-sm font-medium whitespace-nowrap',
+                'text-sm font-medium whitespace-nowrap drop-shadow-sm',
                 'transition-all duration-200',
                 'cursor-pointer',
                 active
-                  ? 'bg-brand-100 text-brand-700'
-                  : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700',
+                  ? 'bg-blue-600 text-white'
+                  : 'text-slate-300 hover:bg-slate-800/50 hover:text-white',
               ].join(' ')}
             >
               {cat.label}
@@ -412,8 +412,8 @@ export default function ShoppingListPage() {
                     'min-w-5 h-5 px-1.5 rounded-full',
                     'text-xs font-semibold',
                     active
-                      ? 'bg-brand-200 text-brand-800'
-                      : 'bg-neutral-200 text-neutral-600',
+                      ? 'bg-blue-700 text-white'
+                      : 'bg-slate-800/50 text-slate-300',
                   ].join(' ')}
                 >
                   {count}

@@ -291,10 +291,10 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* ── Welcome ── */}
       <section>
-        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
           Welcome back! {'\uD83D\uDC4B'}
         </h1>
-        <p className="mt-1 text-neutral-500">
+        <p className="mt-1 text-sky-100 drop-shadow-sm">
           Here&apos;s what&apos;s happening in your kitchen today.
         </p>
       </section>
@@ -305,19 +305,20 @@ export default function Dashboard() {
           role="alert"
           className={[
             'flex flex-col md:flex-row md:items-center gap-3',
-            'rounded-xl border-l-4 border-l-danger',
-            'bg-danger-light p-4 md:p-5',
+            'rounded-xl border-l-4 border-l-red-500',
+            'bg-red-900/90 backdrop-blur-xl p-4 md:p-5',
+            'drop-shadow-lg',
           ].join(' ')}
         >
-          <span className="text-danger shrink-0">
+          <span className="text-red-300 shrink-0">
             <WarningIcon />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-danger-dark">
+            <p className="text-sm font-semibold text-white">
               {urgentCount} {urgentCount === 1 ? 'item' : 'items'} expiring
               soon!
             </p>
-            <p className="text-sm text-danger-dark/70 mt-0.5">
+            <p className="text-sm text-slate-200 mt-0.5">
               Use them before they go to waste.
             </p>
           </div>
@@ -325,6 +326,7 @@ export default function Dashboard() {
             variant="danger"
             size="sm"
             onClick={() => navigate('/recipes')}
+            className="bg-red-600 text-white hover:bg-red-700"
           >
             Get Recipes
           </Button>
@@ -342,7 +344,7 @@ export default function Dashboard() {
 
       {/* ── Quick Actions ── */}
       <section>
-        <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+        <h2 className="text-lg font-semibold text-white mb-4" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -353,10 +355,10 @@ export default function Dashboard() {
               onClick={() => navigate(action.path)}
               className={[
                 'flex flex-col items-center gap-3 p-5 md:p-6',
-                'rounded-xl border border-neutral-200 bg-white',
+                'rounded-xl border border-white/20 bg-slate-950/60 backdrop-blur-2xl',
                 'min-h-[44px]',
                 'transition-all duration-200 ease-in-out',
-                'hover:-translate-y-0.5 hover:shadow-medium hover:border-brand-300',
+                'hover:scale-105 hover:shadow-[0_0_20px_rgba(255,223,0,0.6),0_0_40px_rgba(0,255,255,0.3)]',
                 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
                 'cursor-pointer group',
               ].join(' ')}
@@ -365,18 +367,18 @@ export default function Dashboard() {
                 className={[
                   'flex items-center justify-center',
                   'w-12 h-12 rounded-full',
-                  'bg-brand-100 text-brand-600',
-                  'group-hover:bg-brand-200',
+                  'bg-blue-600 text-white',
+                  'group-hover:bg-blue-700',
                   'transition-colors duration-200',
                 ].join(' ')}
               >
                 {action.icon}
               </div>
               <div className="text-center">
-                <span className="block text-sm font-semibold text-neutral-900">
+                <span className="block text-sm font-semibold text-white drop-shadow-sm">
                   {action.label}
                 </span>
-                <span className="block mt-0.5 text-xs text-neutral-500">
+                <span className="block mt-0.5 text-xs text-slate-200 drop-shadow-sm">
                   {action.description}
                 </span>
               </div>
@@ -387,7 +389,7 @@ export default function Dashboard() {
 
       {/* ── Expiring Soon ── */}
       <section>
-        <Card padding="none">
+        <Card padding="none" className="bg-slate-950/60 backdrop-blur-2xl">
           <div className="p-5 pb-0">
             <CardHeader
               title="Items Expiring Soon"
@@ -396,6 +398,7 @@ export default function Dashboard() {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/dashboard')}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
                 >
                   View All
                 </Button>
@@ -428,7 +431,7 @@ export default function Dashboard() {
 
       {/* ── Recent Items ── */}
       <section>
-        <Card padding="none">
+        <Card padding="none" className="bg-slate-950/60 backdrop-blur-2xl">
           <div className="p-5 pb-0">
             <CardHeader
               title="Recent Items"
@@ -437,6 +440,7 @@ export default function Dashboard() {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/scan')}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
                 >
                   Scan More
                 </Button>
@@ -475,10 +479,10 @@ export default function Dashboard() {
             'fixed bottom-6 right-6 z-50',
             'flex items-center gap-2 px-4 py-2.5',
             'rounded-full shadow-lg',
-            'bg-neutral-900 text-white text-sm font-medium',
-            'hover:bg-neutral-800 active:bg-neutral-950',
+            'bg-blue-600 text-white text-sm font-medium',
+            'hover:bg-blue-700 active:bg-blue-800',
             'transition-all duration-200 ease-in-out',
-            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400',
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400',
           ].join(' ')}
           title="Test API Connection"
         >
