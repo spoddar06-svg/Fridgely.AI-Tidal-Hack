@@ -753,10 +753,7 @@ async def delete_item(item_id: str):
     try:
         from bson import ObjectId
 
-        # Try ObjectId first, then string fallback
         result = await db.inventory_items.delete_one({"_id": ObjectId(item_id)})
-        if result.deleted_count == 0:
-            result = await db.inventory_items.delete_one({"_id": item_id})
 
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="Item not found")
