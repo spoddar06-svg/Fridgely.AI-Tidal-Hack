@@ -349,7 +349,7 @@ async def get_expiring_items(user_id: str, days: int = 3):
 
 
 # ==================== RECIPE GENERATION ====================
-@app.get("/api/recipes/{user_id}", response_model=RecipeResponse)
+@app.get("/api/recipes/{user_id}")
 async def get_recipes(user_id: str, days: int = 3):
     """
     Generate recipes using expiring ingredients
@@ -362,6 +362,8 @@ async def get_recipes(user_id: str, days: int = 3):
         Recipe suggestions using expiring items
     """
     db = get_database()
+
+    print(f"📋 Recipe request for user_id='{user_id}', days={days}")
 
     try:
         # Get expiring items
@@ -381,23 +383,26 @@ async def get_recipes(user_id: str, days: int = 3):
 
         # Fallback: use ALL active inventory items when none are expiring
         if not items:
-            print(f"📋 No expiring items for {user_id}, falling back to all active items")
+            print(f"  ↳ No expiring items, falling back to all active items for '{user_id}'")
             items_cursor = db.inventory_items.find({
                 "user_id": user_id,
                 "status": "active",
             })
             items = await items_cursor.to_list(length=50)
 
+        # ── Empty inventory → explicit error so frontend can exit loading ──
         if not items:
-            return RecipeResponse(
-                recipes=[],
-                expiring_items_used=[],
-                message="No items in your inventory yet. Scan your fridge first!"
-            )
+            print(f"  ↳ No inventory items at all for '{user_id}'")
+            return JSONResponse(content={
+                "error": "No ingredients found",
+                "recipes": [],
+                "expiring_items_used": [],
+                "message": "Your fridge is empty! Scan some food first.",
+            })
 
-        # Extract item names
+        # Extract unique item names
         expiring_item_names = list({item["item_name"] for item in items})
-        print(f"🧾 Ingredients being sent to Gemini for {user_id}: {expiring_item_names}")
+        print(f"  ↳ Ingredients ({len(expiring_item_names)}): {expiring_item_names}")
 
         # Generate recipes with Gemini
         if app.state.gemini_helper is None:
@@ -405,12 +410,13 @@ async def get_recipes(user_id: str, days: int = 3):
         recipes = app.state.gemini_helper.generate_recipes(expiring_item_names, max_recipes=3)
 
         if not recipes:
-            print(f"⚠️  Gemini returned no recipes for ingredients: {expiring_item_names}")
-            return RecipeResponse(
-                recipes=[],
-                expiring_items_used=expiring_item_names,
-                message="Could not generate recipes. Try again later."
-            )
+            print(f"  ↳ Gemini returned no recipes for: {expiring_item_names}")
+            return JSONResponse(content={
+                "error": "Gemini returned empty",
+                "recipes": [],
+                "expiring_items_used": expiring_item_names,
+                "message": "Could not generate recipes right now. Try again later.",
+            })
 
         recipe_objects = [Recipe(**recipe) for recipe in recipes]
 
@@ -422,7 +428,10 @@ async def get_recipes(user_id: str, days: int = 3):
             message=f"Here are {len(recipe_objects)} recipes using your expiring items!"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
+        print(f"❌ Recipe generation error for '{user_id}': {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate recipes: {str(e)}")
 
 

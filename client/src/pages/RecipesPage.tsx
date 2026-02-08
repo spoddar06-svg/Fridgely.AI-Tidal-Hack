@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { Recipe, RecipeDifficulty } from '../types';
 import { recipesApi } from '../api/endpoints/recipes';
 import RecipeCard from '../components/features/Recipes/RecipeCard';
@@ -71,6 +72,21 @@ function BookOpenIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2v11Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2" />
     </svg>
   );
 }
@@ -168,6 +184,7 @@ function Toast({
 /* ---- Component ---- */
 
 export default function RecipesPage() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<PageStatus>('empty');
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [error, setError] = useState('');
@@ -192,18 +209,20 @@ export default function RecipesPage() {
   const handleGenerate = useCallback(async () => {
     setStatus('loading');
     setError('');
+    let nextStatus: PageStatus = 'loaded';
 
     try {
       const result = await recipesApi.generate(USER_ID);
-      if (!mountedRef.current) return;
       setRecipes(result);
-      setStatus('loaded');
     } catch (err) {
-      if (!mountedRef.current) return;
       setError(
         err instanceof Error ? err.message : 'Something went wrong.',
       );
-      setStatus('error');
+      nextStatus = 'error';
+    } finally {
+      if (mountedRef.current) {
+        setStatus(nextStatus);
+      }
     }
   }, []);
 
@@ -423,16 +442,16 @@ export default function RecipesPage() {
       {status === 'loaded' && recipes.length === 0 && (
         <EmptyState
           icon={<BookOpenIcon />}
-          title="No recipes available"
-          description="No ingredients found in fridge to make recipes! Scan your fridge first, then come back."
+          title="Your fridge is empty!"
+          description="Scan some food to get recipes. We'll generate meal ideas based on what's in your fridge."
           action={
             <Button
               variant="primary"
               size="md"
-              leftIcon={<SparkleIcon />}
-              onClick={handleGenerate}
+              leftIcon={<CameraIcon />}
+              onClick={() => navigate('/scan')}
             >
-              Try Again
+              Scan Your Fridge
             </Button>
           }
         />
