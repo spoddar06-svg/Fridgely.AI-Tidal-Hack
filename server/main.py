@@ -86,7 +86,7 @@ async def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "database": "connected" if db else "disconnected",
+        "database": "connected" if db is not None else "disconnected",
         "components": {
             "food_detector": "loaded" if hasattr(app.state, 'food_detector') else "not loaded",
             "date_extractor": "loaded" if hasattr(app.state, 'date_extractor') else "not loaded",

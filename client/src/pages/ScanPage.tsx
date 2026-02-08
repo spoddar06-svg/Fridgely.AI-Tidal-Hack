@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { InventoryItem } from '../types';
+import type { InventoryItem, BackendDetectionResult } from '../types';
+import { scanApi } from '../api/endpoints/scan';
 import ImageUpload from '../components/features/Scanner/ImageUpload';
 import InventoryItemCard from '../components/features/Inventory/InventoryItemCard';
 import Button from '../components/ui/Button';
@@ -10,24 +11,20 @@ import Button from '../components/ui/Button';
 type ScanStatus = 'idle' | 'uploading' | 'processing' | 'success' | 'error';
 type ErrorType = 'network' | 'server' | 'no_items';
 
-/* ---- Mock data helpers ---- */
+/* ---- Helpers ---- */
 
-function daysFromNow(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+/** Map a backend detection result to a frontend InventoryItem for display. */
+function mapDetectionToItem(det: BackendDetectionResult, index: number): InventoryItem {
+  return {
+    id: `scan-${index}`,
+    user_id: 'demo_user',
+    item_name: det.item_name,
+    expiration_date: det.expiration_date ?? '',
+    detected_at: new Date().toISOString(),
+    confidence_score: det.confidence,
+    quantity: 1,
+  };
 }
-
-const mockDetectedItems: InventoryItem[] = [
-  { id: 's1', user_id: 'u1', item_name: 'Whole milk',       expiration_date: daysFromNow(4),  detected_at: new Date().toISOString(), confidence_score: 0.96, category: 'dairy',   quantity: 1 },
-  { id: 's2', user_id: 'u1', item_name: 'Strawberries',     expiration_date: daysFromNow(2),  detected_at: new Date().toISOString(), confidence_score: 0.89, category: 'produce', quantity: 1 },
-  { id: 's3', user_id: 'u1', item_name: 'Sliced turkey',    expiration_date: daysFromNow(3),  detected_at: new Date().toISOString(), confidence_score: 0.91, category: 'meat',    quantity: 1 },
-  { id: 's4', user_id: 'u1', item_name: 'Orange juice',     expiration_date: daysFromNow(7),  detected_at: new Date().toISOString(), confidence_score: 0.94, category: 'beverages', quantity: 1 },
-  { id: 's5', user_id: 'u1', item_name: 'Baby carrots',     expiration_date: daysFromNow(5),  detected_at: new Date().toISOString(), confidence_score: 0.72, category: 'produce', quantity: 2 },
-];
 
 /* ---- Error config ---- */
 
@@ -37,23 +34,18 @@ const errorMessages: Record<ErrorType, { title: string; description: string }> =
   no_items: { title: 'No items detected',       description: 'We couldn\u2019t find any food items. Try better lighting or a different angle.' },
 };
 
-/* ---- Mock API ---- */
+/* ---- Real API upload ---- */
 
 async function uploadImage(
-  _file: File,
+  file: File,
   onProgress: (pct: number) => void,
 ): Promise<InventoryItem[]> {
-  // Simulate upload progress
-  for (let pct = 0; pct <= 100; pct += 20) {
-    await new Promise((r) => setTimeout(r, 200));
-    onProgress(pct);
-  }
+  console.log('Sending file to backend...', file.name, `(${(file.size / 1024).toFixed(1)} KB)`);
 
-  // Simulate processing delay
-  await new Promise((r) => setTimeout(r, 1500));
+  const response = await scanApi.uploadImage(file, 'demo_user', onProgress);
 
-  // Simulate success (return mock items)
-  return mockDetectedItems;
+  console.log('Scan complete:', response.total_items, 'items detected');
+  return response.items_detected.map(mapDetectionToItem);
 }
 
 /* ---- Icons (inline SVGs) ---- */
