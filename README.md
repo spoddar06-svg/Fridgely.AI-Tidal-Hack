@@ -1,1 +1,1 @@
-Hackathon Project (front end by me :()
+Hackathon Project (front end and merging by me :()
