@@ -6,9 +6,15 @@ Falls back to mock detection when ROBOFLOW_API_KEY is not configured.
 import cv2
 import numpy as np
 import random
+import sys
 from typing import List, Optional
 import os
 from dotenv import load_dotenv
+
+# Fix Windows console encoding for emoji/unicode characters
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 load_dotenv()
 

@@ -2,6 +2,13 @@
 FridgeTrack Backend API
 FastAPI server for food inventory management and waste reduction
 """
+import sys
+
+# Fix Windows console encoding for emoji/unicode characters
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -174,8 +181,8 @@ async def scan_fridge(
     db = get_database()
 
     try:
-        # Save uploaded file temporarily
-        file_path = f"uploads/{user_id}_{int(time.time())}_{file.filename}"
+        # Save uploaded file temporarily (absolute path for Roboflow SDK compatibility)
+        file_path = str(Path("uploads").resolve() / f"{user_id}_{int(time.time())}_{file.filename}")
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 

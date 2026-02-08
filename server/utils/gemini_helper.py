@@ -4,11 +4,17 @@ This module uses Google's Gemini API for intelligent features
 """
 import google.generativeai as genai
 import os
+import sys
 import json
 import re
 from typing import List, Optional
 from datetime import datetime, timedelta
 from PIL import Image
+
+# Fix Windows console encoding for emoji/unicode characters
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 class GeminiHelper:

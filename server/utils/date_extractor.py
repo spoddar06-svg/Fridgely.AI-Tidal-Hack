@@ -2,11 +2,17 @@
 Expiration date extraction using OCR
 This module uses EasyOCR to read dates from food packaging
 """
+import sys
 import easyocr
 import re
 from datetime import datetime
 from typing import Optional, List
 import numpy as np
+
+# Fix Windows console encoding for emoji/unicode characters
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 class DateExtractor:
