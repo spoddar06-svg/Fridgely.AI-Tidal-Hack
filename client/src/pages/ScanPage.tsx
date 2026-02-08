@@ -169,8 +169,7 @@ export default function ScanPage() {
   /* ---- Handlers ---- */
 
   const handleUpload = useCallback(async (file: File) => {
-    // Go straight to "processing" — the upload + detection is a single request
-    // and Vite proxy strips Content-Length so progress tracking never works.
+    console.log('[ScanPage] handleUpload called, file:', file.name, file.size, file.type);
     setStatus('processing');
     setDetectedItems([]);
     setErrorDetail(null);
@@ -178,9 +177,8 @@ export default function ScanPage() {
     let succeeded = false;
 
     try {
-      const items = await uploadImage(file, () => {
-        // Progress callback intentionally ignored — proxy makes it unreliable
-      });
+      console.log('[ScanPage] Calling uploadImage...');
+      const items = await uploadImage(file, () => {});
 
       if (items.length === 0) {
         setErrorType('no_items');

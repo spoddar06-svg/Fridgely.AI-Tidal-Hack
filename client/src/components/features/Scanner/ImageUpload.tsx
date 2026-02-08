@@ -205,6 +205,7 @@ export default function ImageUpload({
         setOriginalSize(file.size);
         setState('preview');
         setError('');
+        console.log('[ImageUpload] Calling onUpload, file:', processed.name, processed.size, processed.type);
         onUpload(processed);
       };
       reader.readAsDataURL(processed);
@@ -459,8 +460,7 @@ export default function ImageUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/jpeg,image/png,image/webp"
         onChange={handleFileChange}
         className="hidden"
         aria-label="Upload image"

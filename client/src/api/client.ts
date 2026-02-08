@@ -161,30 +161,40 @@ export async function del<T = void>(url: string): Promise<T> {
 
 /**
  * Upload a file via multipart/form-data.
- * Uses native fetch() instead of axios so the browser correctly sets
- * the Content-Type header with the multipart boundary.
+ * Uses native fetch() so the browser correctly sets multipart boundary.
  */
 export async function upload<T>(
   url: string,
   formData: FormData,
   _onProgress?: (percent: number) => void,
 ): Promise<T> {
-  const baseUrl = env.IS_DEV ? '' : env.API_URL;
+  const fullUrl = env.IS_DEV ? url : `${env.API_URL}${url}`;
 
-  const response = await fetch(`${baseUrl}${url}`, {
-    method: 'POST',
-    body: formData,
-    credentials: 'include',
-    // Do NOT set Content-Type — the browser auto-adds multipart boundary
-  });
+  console.log('[upload] Starting fetch to', fullUrl);
+
+  let response: Response;
+  try {
+    response = await fetch(fullUrl, {
+      method: 'POST',
+      body: formData,
+    });
+  } catch (err) {
+    console.error('[upload] fetch() threw:', err);
+    throw new ApiError(0, 'Connection failed. Check your internet.');
+  }
+
+  console.log('[upload] Response status:', response.status);
 
   if (!response.ok) {
     const data = await response.json().catch(() => null);
+    console.error('[upload] Error response:', data);
     const detail = data?.detail ?? data?.message ?? response.statusText;
     throw new ApiError(response.status, detail, data);
   }
 
-  return response.json() as Promise<T>;
+  const json = await response.json();
+  console.log('[upload] Success, items:', json?.total_items);
+  return json as T;
 }
 
 
