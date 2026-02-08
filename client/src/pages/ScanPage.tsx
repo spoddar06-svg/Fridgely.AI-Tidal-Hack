@@ -214,6 +214,8 @@ export default function ScanPage() {
     setDetectedItems([]);
     setErrorDetail(null);
 
+    let succeeded = false;
+
     try {
       const items = await uploadImage(file, (pct) => {
         if (!mountedRef.current) return;
@@ -226,41 +228,48 @@ export default function ScanPage() {
       if (!mountedRef.current) return;
 
       if (items.length === 0) {
-        setStatus('error');
         setErrorType('no_items');
-        return;
+        setErrorDetail('We couldn\u2019t find any food items. Try better lighting or a different angle.');
+        return; // finally will set status to 'error'
       }
 
       setDetectedItems(items);
+      succeeded = true;
       setStatus('success');
     } catch (error: unknown) {
       if (!mountedRef.current) return;
+      console.error('[ScanPage] Upload failed:', error);
 
-      // Classify the error and extract the backend detail message
-      if (isApiError(error)) {
-        const detail = typeof error.data === 'object' && error.data !== null && 'detail' in error.data
-          ? String((error.data as { detail: unknown }).detail)
-          : error.message;
+      // Extract the backend detail message (e.g. "No items detected. Try getting closer...")
+      try {
+        if (isApiError(error)) {
+          const detail = typeof error.data === 'object' && error.data !== null && 'detail' in error.data
+            ? String((error.data as { detail: unknown }).detail)
+            : error.message;
 
-        if (error.status === 400) {
-          setErrorType('no_items');
-          setErrorDetail(detail);
-        } else if (error.status === 0) {
-          setErrorType('network');
-          setErrorDetail(null);
+          if (error.status === 400) {
+            setErrorType('no_items');
+            setErrorDetail(detail);
+          } else if (error.status === 0) {
+            setErrorType('network');
+          } else {
+            setErrorType('server');
+            setErrorDetail(detail);
+          }
         } else {
-          setErrorType('server');
-          setErrorDetail(detail);
+          setErrorType('network');
         }
-      } else {
-        setErrorType('network');
-        setErrorDetail(null);
+      } catch {
+        // If detail extraction itself fails, fall back to generic server error
+        setErrorType('server');
       }
-
-      setStatus('error');
     } finally {
-      if (mountedRef.current) {
-        setProgress(0);
+      if (!mountedRef.current) return;
+      setProgress(0);
+      // Safety net: if we didn't reach success, force the error screen
+      // so the UI never stays stuck on 'uploading' or 'processing'.
+      if (!succeeded) {
+        setStatus('error');
       }
     }
   }, []);
