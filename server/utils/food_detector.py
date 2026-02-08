@@ -1,33 +1,55 @@
 """
 Food detection using custom Roboflow model
-This module handles detecting food items in fridge images
+This module handles detecting food items in fridge images.
+Falls back to mock detection when ROBOFLOW_API_KEY is not configured.
 """
 import cv2
 import numpy as np
-from roboflow import Roboflow
-from typing import List
+import random
+from typing import List, Optional
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+# Mock food items returned when Roboflow is not available
+MOCK_FOOD_ITEMS = [
+    "apple", "banana", "milk", "cheese", "yogurt",
+    "lettuce", "tomato", "eggs", "bread", "orange juice",
+]
+
+
 class FoodDetector:
     """Detect food items in images using a custom Roboflow model"""
 
     def __init__(self):
+        self.model = None
+        self.mock_mode = False
+
         api_key = os.getenv('ROBOFLOW_API_KEY')
-        workspace = os.getenv('ROBOFLOW_WORKSPACE', 'security-detection')
-        project_name = os.getenv('ROBOFLOW_PROJECT', 'fridge-food-images-suzmb')
-        version = int(os.getenv('ROBOFLOW_VERSION', '1'))
 
-        if not api_key:
-            raise RuntimeError("ROBOFLOW_API_KEY not set in .env")
+        # Treat placeholder values as missing
+        if not api_key or api_key in ('YOUR_KEY_HERE', 'your_roboflow_api_key_here'):
+            print("⚠️  ROBOFLOW_API_KEY not set — using mock detection")
+            self.mock_mode = True
+            return
 
-        rf = Roboflow(api_key=api_key)
-        project = rf.workspace(workspace).project(project_name)
-        self.model = project.version(version).model
-        print(f"✅ Loaded Roboflow model: {workspace}/{project_name} v{version}")
+        try:
+            from roboflow import Roboflow
+
+            workspace = os.getenv('ROBOFLOW_WORKSPACE', 'security-detection')
+            project_name = os.getenv('ROBOFLOW_PROJECT', 'fridge-food-images-suzmb')
+            version = int(os.getenv('ROBOFLOW_VERSION', '1'))
+
+            rf = Roboflow(api_key=api_key)
+            project = rf.workspace(workspace).project(project_name)
+            self.model = project.version(version).model
+            print(f"✅ Loaded Roboflow model: {workspace}/{project_name} v{version}")
+        except Exception as e:
+            print(f"⚠️  Failed to load Roboflow model: {e}")
+            print("   Falling back to mock detection")
+            self.mock_mode = True
 
     def detect_items(self, image_path: str, confidence_threshold: float = 0.4) -> List[dict]:
         """
@@ -40,6 +62,9 @@ class FoodDetector:
         Returns:
             List of detected items with bounding boxes and confidence scores
         """
+        if self.mock_mode:
+            return self._mock_detect(image_path)
+
         try:
             result = self.model.predict(
                 image_path,
@@ -72,6 +97,37 @@ class FoodDetector:
         except Exception as e:
             print(f"❌ Error during detection: {e}")
             return []
+
+    def _mock_detect(self, image_path: str) -> List[dict]:
+        """Return mock detections for development/demo purposes"""
+        try:
+            image = cv2.imread(image_path)
+            if image is None:
+                h, w = 480, 640
+            else:
+                h, w = image.shape[:2]
+        except Exception:
+            h, w = 480, 640
+
+        count = random.randint(2, 5)
+        items = random.sample(MOCK_FOOD_ITEMS, min(count, len(MOCK_FOOD_ITEMS)))
+        detections = []
+
+        for i, item_name in enumerate(items):
+            # Spread mock boxes across the image
+            x1 = int(w * (i / count))
+            y1 = random.randint(0, h // 2)
+            x2 = x1 + random.randint(80, 160)
+            y2 = y1 + random.randint(80, 160)
+
+            detections.append({
+                "item_name": item_name,
+                "confidence": round(random.uniform(0.7, 0.95), 3),
+                "bounding_box": [x1, y1, min(x2, w), min(y2, h)],
+            })
+
+        print(f"🔍 [MOCK] Detected {len(detections)} items in image")
+        return detections
 
     def crop_detection(self, image_path: str, bounding_box: List[int], padding: int = 10) -> np.ndarray:
         """

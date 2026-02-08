@@ -28,17 +28,62 @@ from utils.gemini_helper import GeminiHelper
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handle startup and shutdown events"""
-    # Startup
-    print("🚀 Starting FridgeTrack API...")
-    await connect_to_mongo()
+    print("\n🚀 Starting FridgeTrack API...")
+    print("=" * 50)
 
-    # Initialize AI models
-    app.state.food_detector = FoodDetector()
-    app.state.date_extractor = DateExtractor()
-    app.state.gemini_helper = GeminiHelper()
+    # --- .env check ---
+    env_path = Path(__file__).parent / ".env"
+    if env_path.exists():
+        print("  ✅ .env file found")
+    else:
+        print("  ⚠️  .env file not found — using defaults / env vars")
 
-    # Create uploads directory
+    # --- MongoDB ---
+    try:
+        await connect_to_mongo()
+        print("  ✅ MongoDB connected")
+    except Exception as e:
+        print(f"  ❌ MongoDB connection failed: {e}")
+        print("     Server will start but DB-dependent routes will fail")
+
+    # --- Food Detector (Roboflow) ---
+    try:
+        app.state.food_detector = FoodDetector()
+        if app.state.food_detector.mock_mode:
+            print("  ⚠️  Food detector: mock mode (set ROBOFLOW_API_KEY for real detection)")
+        else:
+            print("  ✅ Food detector: Roboflow loaded")
+    except Exception as e:
+        print(f"  ❌ Food detector failed to init: {e}")
+        app.state.food_detector = None
+
+    # --- Date Extractor (EasyOCR) ---
+    try:
+        app.state.date_extractor = DateExtractor()
+        if app.state.date_extractor.reader is not None:
+            print("  ✅ Date extractor: EasyOCR loaded")
+        else:
+            print("  ⚠️  Date extractor: EasyOCR unavailable")
+    except Exception as e:
+        print(f"  ❌ Date extractor failed to init: {e}")
+        app.state.date_extractor = None
+
+    # --- Gemini Helper ---
+    try:
+        app.state.gemini_helper = GeminiHelper()
+        if app.state.gemini_helper.model is not None:
+            print("  ✅ Gemini AI: configured")
+        else:
+            print("  ⚠️  Gemini AI: not configured (set GEMINI_API_KEY for recipes)")
+    except Exception as e:
+        print(f"  ❌ Gemini helper failed to init: {e}")
+        app.state.gemini_helper = None
+
+    # --- Uploads directory ---
     Path("uploads").mkdir(exist_ok=True)
+
+    print("=" * 50)
+    print("🟢 FridgeTrack API is ready!\n")
 
     yield
 
@@ -83,14 +128,32 @@ async def health_check():
     """Detailed health check"""
     db = get_database()
 
+    def _detector_status():
+        detector = getattr(app.state, 'food_detector', None)
+        if detector is None:
+            return "not loaded"
+        return "mock" if detector.mock_mode else "loaded"
+
+    def _extractor_status():
+        extractor = getattr(app.state, 'date_extractor', None)
+        if extractor is None:
+            return "not loaded"
+        return "loaded" if extractor.reader is not None else "unavailable"
+
+    def _gemini_status():
+        helper = getattr(app.state, 'gemini_helper', None)
+        if helper is None:
+            return "not loaded"
+        return "loaded" if helper.model is not None else "unconfigured"
+
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "database": "connected" if db is not None else "disconnected",
         "components": {
-            "food_detector": "loaded" if hasattr(app.state, 'food_detector') else "not loaded",
-            "date_extractor": "loaded" if hasattr(app.state, 'date_extractor') else "not loaded",
-            "gemini": "loaded" if hasattr(app.state, 'gemini_helper') else "not loaded"
+            "food_detector": _detector_status(),
+            "date_extractor": _extractor_status(),
+            "gemini": _gemini_status(),
         }
     }
 
@@ -122,7 +185,10 @@ async def scan_fridge(
 
         print(f"📸 Processing scan for user {user_id}: {file_path}")
 
-        # Step 1: Detect food items with Roboflow model
+        # Step 1: Detect food items
+        if app.state.food_detector is None:
+            raise HTTPException(status_code=503, detail="Food detector is not available. Check server logs.")
+
         detections = app.state.food_detector.detect_items(file_path, confidence_threshold=0.4)
 
         if not detections:
@@ -144,10 +210,11 @@ async def scan_fridge(
                 cv2.imwrite(crop_path, cropped)
 
                 # Run OCR on cropped region
-                expiration_date = app.state.date_extractor.extract_date_from_image(crop_path)
+                if app.state.date_extractor is not None:
+                    expiration_date = app.state.date_extractor.extract_date_from_image(crop_path)
 
                 # Fallback to Gemini if OCR fails
-                if not expiration_date and detection["confidence"] < 0.7:
+                if not expiration_date and detection["confidence"] < 0.7 and app.state.gemini_helper is not None:
                     expiration_date = app.state.gemini_helper.extract_expiration_date(crop_path)
 
                 # Clean up cropped image
@@ -356,6 +423,8 @@ async def get_recipes(user_id: str, days: int = 3):
         expiring_item_names = [item["item_name"] for item in items]
 
         # Generate recipes with Gemini
+        if app.state.gemini_helper is None:
+            raise HTTPException(status_code=503, detail="Gemini AI is not available. Set GEMINI_API_KEY.")
         recipes = app.state.gemini_helper.generate_recipes(expiring_item_names, max_recipes=3)
 
         recipe_objects = [Recipe(**recipe) for recipe in recipes]
@@ -403,6 +472,8 @@ async def get_shopping_list(user_id: str):
         }).to_list(length=100)
 
         # Generate suggestions with Gemini
+        if app.state.gemini_helper is None:
+            raise HTTPException(status_code=503, detail="Gemini AI is not available. Set GEMINI_API_KEY.")
         suggestions = app.state.gemini_helper.generate_shopping_suggestions(
             current_item_names,
             scan_history
