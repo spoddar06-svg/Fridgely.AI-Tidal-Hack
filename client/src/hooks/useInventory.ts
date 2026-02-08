@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { inventoryApi } from '../api/endpoints/inventory';
 import { scanApi } from '../api/endpoints/scan';
-import type { InventoryItem, ItemStatus, BackendScanResponse, BackendItemStatusResponse } from '../types';
+import type { InventoryItem, ItemStatus, BackendScanResponse, BackendItemStatusResponse, BackendCrossOutResponse } from '../types';
 
 /* ============================================
  * FridgeTrack — Inventory Hooks
@@ -92,6 +92,39 @@ export function useUpdateItemStatus(userId: string) {
   >({
     mutationFn: ({ itemId, status }) => inventoryApi.updateItemStatus(itemId, status),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all(userId) });
+      queryClient.invalidateQueries({ queryKey: ['expiring', userId] });
+    },
+  });
+}
+
+/**
+ * Toggle the crossed-out state of an inventory item.
+ *
+ * Optimistically flips `is_crossed_out` in the cache and
+ * rolls back on error.
+ */
+export function useToggleCrossOut(userId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation<BackendCrossOutResponse, Error, string>({
+    mutationFn: (itemId) => inventoryApi.toggleCrossOut(itemId),
+    onMutate: async (itemId) => {
+      await queryClient.cancelQueries({ queryKey: inventoryKeys.all(userId) });
+      const previous = queryClient.getQueryData<InventoryItem[]>(inventoryKeys.all(userId));
+      queryClient.setQueryData<InventoryItem[]>(inventoryKeys.all(userId), (old) =>
+        old?.map((item) =>
+          item.id === itemId ? { ...item, is_crossed_out: !item.is_crossed_out } : item,
+        ),
+      );
+      return { previous };
+    },
+    onError: (_err, _itemId, context: any) => {
+      if (context?.previous) {
+        queryClient.setQueryData(inventoryKeys.all(userId), context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.all(userId) });
       queryClient.invalidateQueries({ queryKey: ['expiring', userId] });
     },

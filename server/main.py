@@ -736,6 +736,42 @@ async def update_item_status(item_id: str, status: str = Form(...)):
         raise HTTPException(status_code=500, detail=f"Failed to update item: {str(e)}")
 
 
+# ==================== CROSS-OUT TOGGLE ====================
+@app.put("/api/items/{item_id}/cross-out")
+async def toggle_cross_out(item_id: str):
+    """
+    Toggle the is_crossed_out flag on an inventory item.
+
+    Args:
+        item_id: MongoDB item ID
+
+    Returns:
+        Updated crossed-out state
+    """
+    db = get_database()
+
+    try:
+        from bson import ObjectId
+
+        item = await db.inventory_items.find_one({"_id": ObjectId(item_id)})
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        new_value = not item.get("is_crossed_out", False)
+
+        await db.inventory_items.update_one(
+            {"_id": ObjectId(item_id)},
+            {"$set": {"is_crossed_out": new_value}}
+        )
+
+        return {"item_id": item_id, "is_crossed_out": new_value}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to toggle cross-out: {str(e)}")
+
+
 # ==================== RUN SERVER ====================
 if __name__ == "__main__":
     import uvicorn

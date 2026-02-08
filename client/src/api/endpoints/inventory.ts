@@ -6,6 +6,7 @@ import type {
   BackendExpiringResponse,
   BackendInventoryItem,
   BackendItemStatusResponse,
+  BackendCrossOutResponse,
 } from '../../types';
 
 /* ============================================
@@ -34,6 +35,7 @@ function mapItem(raw: BackendInventoryItem): InventoryItem {
     image_url: raw.image_url,
     quantity: raw.quantity,
     category: raw.category as InventoryItem['category'],
+    is_crossed_out: raw.is_crossed_out ?? false,
   };
 }
 
@@ -150,6 +152,22 @@ async function updateItemStatus(
 }
 
 /**
+ * Toggle the crossed-out state of an inventory item.
+ *
+ * Backend route: PUT /api/items/{item_id}/cross-out
+ *
+ * @param itemId - The item's MongoDB ID
+ * @returns Updated crossed-out state
+ */
+async function toggleCrossOut(
+  itemId: string,
+): Promise<BackendCrossOutResponse> {
+  return put<BackendCrossOutResponse>(
+    `/api/items/${encodeURIComponent(itemId)}/cross-out`,
+  );
+}
+
+/**
  * Delete an inventory item.
  *
  * NOTE: This endpoint is not yet implemented on the backend.
@@ -175,5 +193,6 @@ export const inventoryApi = {
   getExpiring,
   addItem,
   updateItemStatus,
+  toggleCrossOut,
   deleteItem,
 } as const;

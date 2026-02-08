@@ -46,6 +46,7 @@ export interface InventoryItem {
   category?: FoodCategory;
   quantity?: number;
   manually_added?: boolean;
+  is_crossed_out?: boolean;
 }
 
 export interface BoundingBox {
@@ -219,6 +220,7 @@ export interface BackendInventoryItem {
   quantity?: number;
   category?: string;
   status: string;
+  is_crossed_out?: boolean;
 }
 
 export interface BackendInventoryResponse {
@@ -255,6 +257,11 @@ export interface BackendRecipeResponse {
 export interface BackendItemStatusResponse {
   message: string;
   item_id: string;
+}
+
+export interface BackendCrossOutResponse {
+  item_id: string;
+  is_crossed_out: boolean;
 }
 
 export interface BackendStatsResponse {
