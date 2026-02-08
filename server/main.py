@@ -368,6 +368,7 @@ async def get_recipes(user_id: str, days: int = 3):
         today = datetime.utcnow()
         future_date = today + timedelta(days=days)
 
+        # First try expiring items
         items_cursor = db.inventory_items.find({
             "user_id": user_id,
             "status": "active",
@@ -376,23 +377,40 @@ async def get_recipes(user_id: str, days: int = 3):
                 "$lte": future_date
             }
         })
-
         items = await items_cursor.to_list(length=50)
+
+        # Fallback: use ALL active inventory items when none are expiring
+        if not items:
+            print(f"📋 No expiring items for {user_id}, falling back to all active items")
+            items_cursor = db.inventory_items.find({
+                "user_id": user_id,
+                "status": "active",
+            })
+            items = await items_cursor.to_list(length=50)
 
         if not items:
             return RecipeResponse(
                 recipes=[],
                 expiring_items_used=[],
-                message="No expiring items found. Your fridge is in good shape!"
+                message="No items in your inventory yet. Scan your fridge first!"
             )
 
         # Extract item names
-        expiring_item_names = [item["item_name"] for item in items]
+        expiring_item_names = list({item["item_name"] for item in items})
+        print(f"🧾 Ingredients being sent to Gemini for {user_id}: {expiring_item_names}")
 
         # Generate recipes with Gemini
         if app.state.gemini_helper is None:
             raise HTTPException(status_code=503, detail="Gemini AI is not available. Set GEMINI_API_KEY.")
         recipes = app.state.gemini_helper.generate_recipes(expiring_item_names, max_recipes=3)
+
+        if not recipes:
+            print(f"⚠️  Gemini returned no recipes for ingredients: {expiring_item_names}")
+            return RecipeResponse(
+                recipes=[],
+                expiring_items_used=expiring_item_names,
+                message="Could not generate recipes. Try again later."
+            )
 
         recipe_objects = [Recipe(**recipe) for recipe in recipes]
 
