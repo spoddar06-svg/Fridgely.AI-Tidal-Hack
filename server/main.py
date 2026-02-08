@@ -46,13 +46,20 @@ async def lifespan(app: FastAPI):
         print(f"  ❌ MongoDB connection failed: {e}")
         print("     Server will start but DB-dependent routes will fail")
 
-    # --- Food Detector (Roboflow) ---
+    # --- Gemini Helper (init first — used by food detector) ---
     try:
-        app.state.food_detector = FoodDetector()
-        if app.state.food_detector.mock_mode:
-            print("  ⚠️  Food detector: mock mode (set ROBOFLOW_API_KEY for real detection)")
+        app.state.gemini_helper = GeminiHelper()
+        if app.state.gemini_helper.model is not None:
+            print("  ✅ Gemini AI: configured")
         else:
-            print("  ✅ Food detector: Roboflow loaded")
+            print("  ⚠️  Gemini AI: not configured (set GEMINI_API_KEY)")
+    except Exception as e:
+        print(f"  ❌ Gemini helper failed to init: {e}")
+        app.state.gemini_helper = None
+
+    # --- Food Detector (Gemini primary, Roboflow fallback) ---
+    try:
+        app.state.food_detector = FoodDetector(gemini_helper=app.state.gemini_helper)
     except Exception as e:
         print(f"  ❌ Food detector failed to init: {e}")
         app.state.food_detector = None
@@ -67,17 +74,6 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"  ❌ Date extractor failed to init: {e}")
         app.state.date_extractor = None
-
-    # --- Gemini Helper ---
-    try:
-        app.state.gemini_helper = GeminiHelper()
-        if app.state.gemini_helper.model is not None:
-            print("  ✅ Gemini AI: configured")
-        else:
-            print("  ⚠️  Gemini AI: not configured (set GEMINI_API_KEY for recipes)")
-    except Exception as e:
-        print(f"  ❌ Gemini helper failed to init: {e}")
-        app.state.gemini_helper = None
 
     # --- Uploads directory ---
     Path("uploads").mkdir(exist_ok=True)

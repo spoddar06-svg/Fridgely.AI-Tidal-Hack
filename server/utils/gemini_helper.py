@@ -34,6 +34,66 @@ class GeminiHelper:
             print(f"❌ Error initializing Gemini: {e}")
             self.model = None
 
+    def detect_all_food_items(self, image_path: str) -> List[dict]:
+        """
+        Detect all food items in a fridge image using Gemini Vision.
+
+        Args:
+            image_path: Path to the fridge image
+
+        Returns:
+            List of dicts with item_name, confidence, bounding_box
+        """
+        if not self.model:
+            return []
+
+        try:
+            img = Image.open(image_path)
+            w, h = img.size
+
+            prompt = """Look at this fridge/food image and identify ALL food items you can see.
+
+For each item, provide:
+- "item_name": the food name (1-3 words, lowercase)
+- "confidence": how confident you are (0.0 to 1.0)
+
+Respond with ONLY a JSON array, no other text:
+[{"item_name": "milk", "confidence": 0.95}, {"item_name": "apple", "confidence": 0.9}]
+
+If no food items are found, respond with: []"""
+
+            response = self.model.generate_content([prompt, img])
+            response_text = response.text.strip()
+
+            if "```json" in response_text:
+                response_text = response_text.split("```json")[1].split("```")[0]
+            elif "```" in response_text:
+                response_text = response_text.split("```")[1].split("```")[0]
+
+            items = json.loads(response_text)
+
+            # Add placeholder bounding boxes spread across the image
+            detections = []
+            count = len(items)
+            for i, item in enumerate(items):
+                box_w = w // max(count, 1)
+                x1 = i * box_w
+                y1 = 0
+                x2 = min(x1 + box_w, w)
+                y2 = h
+                detections.append({
+                    "item_name": item.get("item_name", "unknown"),
+                    "confidence": round(float(item.get("confidence", 0.8)), 3),
+                    "bounding_box": [x1, y1, x2, y2],
+                })
+
+            print(f"🔍 Gemini detected {len(detections)} food items")
+            return detections
+
+        except Exception as e:
+            print(f"❌ Error detecting food with Gemini: {e}")
+            return []
+
     def identify_food_item(self, image_path: str) -> Optional[str]:
         """
         Identify a food item from an image (fallback for low-confidence YOLO detections)
