@@ -8,10 +8,10 @@ load_dotenv()
 class RoboflowFoodDetector:
     def __init__(self):
         """Initialize Roboflow model"""
-        api_key = os.getenv('AL6RCDC5cgq3FG0iqnLB')
-        workspace = os.getenv('security-detection')
-        project = os.getenv('fridge-food-images-suzmb')
-        version = int(os.getenv('ROBOFLOW_VERSION', 1))
+        api_key = os.getenv('ROBOFLOW_API_KEY')
+        workspace = os.getenv('ROBOFLOW_WORKSPACE')
+        project = os.getenv('ROBOFLOW_PROJECT')
+        version = int(os.getenv('ROBOFLOW_VERSION', 2))
         
         if not api_key:
             raise ValueError("ROBOFLOW_API_KEY not found in .env file")

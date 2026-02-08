@@ -33,7 +33,7 @@ def main():
     rf = Roboflow(api_key=api_key)
     workspace = os.getenv('ROBOFLOW_WORKSPACE', 'security-detection')
     project_name = os.getenv('ROBOFLOW_PROJECT', 'fridge-food-images-suzmb')
-    version = int(os.getenv('ROBOFLOW_VERSION', '1'))
+    version = int(os.getenv('ROBOFLOW_VERSION', '2'))
     project = rf.workspace(workspace).project(project_name)
     model = project.version(version).model
     print("✓ Model loaded")
