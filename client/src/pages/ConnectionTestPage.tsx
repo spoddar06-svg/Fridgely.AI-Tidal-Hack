@@ -197,9 +197,9 @@ function buildTests(): TestDefinition[] {
     {
       id: 'recipes',
       name: 'Recipe Generation',
-      description: `GET /api/recipes/${TEST_USER_ID} — Gemini-powered recipes`,
+      description: 'POST /api/get-recipes — Gemini-powered recipes',
       run: async () => {
-        const data = await recipesApi.generate(TEST_USER_ID, 3);
+        const data = await recipesApi.generate(['apple', 'milk', 'egg']);
         return { data, httpStatus: 200 };
       },
     },

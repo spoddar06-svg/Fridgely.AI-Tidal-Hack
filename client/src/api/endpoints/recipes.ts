@@ -1,4 +1,4 @@
-import { get, ApiError, isApiError } from '../client';
+import { post, ApiError, isApiError } from '../client';
 import type { Recipe, BackendRecipeResponse, BackendRecipe } from '../../types';
 
 /* ============================================
@@ -70,24 +70,30 @@ function mapRecipe(raw: BackendRecipe, index: number): Recipe {
 // ---- Endpoints ----
 
 /**
- * Generate recipe suggestions from a user's expiring inventory items.
+ * Generate recipe suggestions from explicit ingredient names.
  *
- * Backend route: GET /api/recipes/{user_id}?days=3
+ * Backend route: POST /api/get-recipes
+ * Body: { items: ["apple", "milk", ...] }
  *
  * Uses the Gemini API on the backend — subject to rate limits.
  * Automatically retries with exponential backoff on 429/503.
  *
- * @param userId - The user's ID
- * @param days   - Lookahead window for expiring items (default: 3)
- * @returns Array of recipe suggestions using expiring items
+ * @param items - Ingredient names to generate recipes from
+ * @returns Array of recipe suggestions
  */
-async function generate(userId: string, days: number = 3): Promise<Recipe[]> {
+async function generate(items: string[]): Promise<Recipe[]> {
   try {
     return await withRetry(async () => {
-      const response = await get<BackendRecipeResponse>(
-        `/api/recipes/${encodeURIComponent(userId)}`,
-        { days },
+      const response = await post<BackendRecipeResponse & { error?: string }>(
+        '/api/get-recipes',
+        { items },
       );
+
+      // Backend may return 200 with an error field when Gemini fails
+      if (response.error) {
+        throw new ApiError(200, response.message || response.error, response);
+      }
+
       return (response.recipes ?? []).map(mapRecipe);
     });
   } catch (error: unknown) {

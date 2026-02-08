@@ -16,7 +16,7 @@ import type { Recipe } from '../types';
 // ---- Query Keys ----
 
 const recipeKeys = {
-  generated: (userId: string) => ['recipes', 'generated', userId] as const,
+  generated: (items: string[]) => ['recipes', 'generated', ...items] as const,
   search:    (ingredients: string[]) => ['recipes', 'search', ...ingredients] as const,
 };
 
@@ -24,15 +24,15 @@ const recipeKeys = {
 // ---- Queries ----
 
 /**
- * Generate recipe suggestions from a user's expiring items.
+ * Generate recipe suggestions from explicit item names.
  *
  * Disabled by default — call `refetch()` to trigger on demand
  * since this hits the Gemini API and is rate-limited.
  */
-export function useGenerateRecipes(userId: string) {
+export function useGenerateRecipes(items: string[]) {
   return useQuery<Recipe[], Error>({
-    queryKey: recipeKeys.generated(userId),
-    queryFn: () => recipesApi.generate(userId),
+    queryKey: recipeKeys.generated(items),
+    queryFn: () => recipesApi.generate(items),
     enabled: false,
     staleTime: 10 * 60 * 1_000,
   });
@@ -63,8 +63,8 @@ export function useSearchRecipes(ingredients: string[]) {
  * instead of the query-based `useGenerateRecipes` above.
  */
 export function useGenerateRecipesMutation() {
-  return useMutation<Recipe[], Error, string>({
-    mutationFn: (userId) => recipesApi.generate(userId),
+  return useMutation<Recipe[], Error, string[]>({
+    mutationFn: (items) => recipesApi.generate(items),
   });
 }
 

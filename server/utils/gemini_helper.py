@@ -307,38 +307,203 @@ If no food items are found, respond with: []"""
             return self._generate_fallback_recipes(expiring_items)
 
     def _generate_fallback_recipes(self, items: List[str]) -> List[dict]:
-        """Provide simple fallback recipes if Gemini fails"""
-        fallback_recipes = []
+        """Provide fallback recipes when Gemini is unavailable or rate-limited."""
+        lower_items = {item.lower() for item in items}
+        matched = []
 
-        # Simple generic recipes
-        if any(item in ['eggs', 'egg', 'milk', 'bread'] for item in items):
-            fallback_recipes.append({
-                "name": "Quick Breakfast Scramble",
-                "ingredients": ["eggs", "milk", "bread", "butter", "salt", "pepper"],
-                "instructions": [
-                    "Beat eggs with a splash of milk",
-                    "Heat butter in a pan over medium heat",
-                    "Pour in egg mixture and gently scramble",
-                    "Serve with toasted bread"
-                ],
-                "prep_time": "10 minutes",
-                "items_used": [item for item in items if item in ['eggs', 'egg', 'milk', 'bread']]
-            })
+        # Each entry: (required_any, recipe_dict_factory)
+        # A recipe is included if the user has ANY of the required items.
+        catalog = [
+            # ── Breakfast / Egg-based ──
+            {
+                "match": {"egg", "eggs", "milk", "bread"},
+                "recipe": {
+                    "name": "Quick Breakfast Scramble",
+                    "ingredients": ["eggs", "milk", "butter", "salt", "pepper", "bread"],
+                    "instructions": [
+                        "Beat eggs with a splash of milk",
+                        "Melt butter in a pan over medium heat",
+                        "Pour in egg mixture and gently scramble",
+                        "Serve on toasted bread"
+                    ],
+                    "prep_time": "10 minutes",
+                },
+            },
+            # ── Chicken ──
+            {
+                "match": {"chicken"},
+                "recipe": {
+                    "name": "One-Pan Garlic Chicken",
+                    "ingredients": ["chicken", "garlic", "olive oil", "salt", "pepper", "lemon"],
+                    "instructions": [
+                        "Season chicken with salt, pepper, and minced garlic",
+                        "Heat olive oil in a skillet over medium-high heat",
+                        "Cook chicken 5-6 min per side until golden and cooked through",
+                        "Squeeze lemon juice on top and serve"
+                    ],
+                    "prep_time": "20 minutes",
+                },
+            },
+            # ── Meat / Beef ──
+            {
+                "match": {"meat", "beef", "pork"},
+                "recipe": {
+                    "name": "Simple Meat Stir-Fry",
+                    "ingredients": ["meat", "soy sauce", "garlic", "vegetable oil", "rice or noodles"],
+                    "instructions": [
+                        "Slice meat into thin strips",
+                        "Heat oil in a wok or large pan over high heat",
+                        "Stir-fry meat 3-4 minutes until browned",
+                        "Add soy sauce and garlic, toss for 1 minute",
+                        "Serve over rice or noodles"
+                    ],
+                    "prep_time": "15 minutes",
+                },
+            },
+            # ── Shrimp / Seafood ──
+            {
+                "match": {"shrimp", "fish"},
+                "recipe": {
+                    "name": "Garlic Butter Shrimp",
+                    "ingredients": ["shrimp", "butter", "garlic", "lemon", "parsley", "salt"],
+                    "instructions": [
+                        "Melt butter in a skillet over medium heat",
+                        "Add minced garlic and cook 30 seconds",
+                        "Add shrimp in a single layer, cook 2 min per side",
+                        "Squeeze lemon over top and garnish with parsley"
+                    ],
+                    "prep_time": "10 minutes",
+                },
+            },
+            # ── Potato ──
+            {
+                "match": {"potato", "sweet potato"},
+                "recipe": {
+                    "name": "Crispy Roasted Potatoes",
+                    "ingredients": ["potatoes", "olive oil", "garlic powder", "paprika", "salt", "pepper"],
+                    "instructions": [
+                        "Preheat oven to 425°F (220°C)",
+                        "Cut potatoes into 1-inch cubes",
+                        "Toss with olive oil, garlic powder, paprika, salt, and pepper",
+                        "Spread on a baking sheet and roast 25-30 min until crispy"
+                    ],
+                    "prep_time": "35 minutes",
+                },
+            },
+            # ── Tomato + Cheese / Pasta ──
+            {
+                "match": {"tomato", "cheese"},
+                "recipe": {
+                    "name": "Tomato Cheese Toast",
+                    "ingredients": ["bread", "tomato", "cheese", "olive oil", "salt", "oregano"],
+                    "instructions": [
+                        "Slice tomatoes and layer on bread",
+                        "Top with cheese slices and a drizzle of olive oil",
+                        "Broil in oven 3-5 minutes until cheese melts",
+                        "Season with salt and oregano"
+                    ],
+                    "prep_time": "10 minutes",
+                },
+            },
+            # ── Carrot / Veggie ──
+            {
+                "match": {"carrot", "green beans", "corn", "cabbage", "capsicum", "brinjal"},
+                "recipe": {
+                    "name": "Quick Sautéed Vegetables",
+                    "ingredients": ["mixed vegetables", "olive oil", "garlic", "soy sauce", "salt", "pepper"],
+                    "instructions": [
+                        "Chop vegetables into bite-size pieces",
+                        "Heat olive oil in a large pan over medium-high heat",
+                        "Add vegetables and stir-fry 5-7 minutes",
+                        "Season with garlic, soy sauce, salt, and pepper"
+                    ],
+                    "prep_time": "15 minutes",
+                },
+            },
+            # ── Banana / Fruit ──
+            {
+                "match": {"banana", "stawberry", "strawberry", "apple", "blue berry", "blueberry"},
+                "recipe": {
+                    "name": "Fresh Fruit Smoothie",
+                    "ingredients": ["banana", "berries or fruit", "milk or yogurt", "honey", "ice"],
+                    "instructions": [
+                        "Peel and chop fruit into chunks",
+                        "Add fruit, milk, honey, and ice to a blender",
+                        "Blend until smooth",
+                        "Pour into a glass and serve immediately"
+                    ],
+                    "prep_time": "5 minutes",
+                },
+            },
+            # ── Milk / Cream ──
+            {
+                "match": {"milk", "fresh cream", "cream"},
+                "recipe": {
+                    "name": "Creamy Mashed Potatoes",
+                    "ingredients": ["potatoes", "milk", "butter", "salt", "pepper"],
+                    "instructions": [
+                        "Peel and cube potatoes, boil until tender (15 min)",
+                        "Drain and return to pot",
+                        "Add butter and warm milk, mash until smooth",
+                        "Season with salt and pepper"
+                    ],
+                    "prep_time": "25 minutes",
+                },
+            },
+            # ── Green leaves / Salad ──
+            {
+                "match": {"green leaves", "lettuce", "spinach", "cucumber"},
+                "recipe": {
+                    "name": "Simple Garden Salad",
+                    "ingredients": ["mixed greens", "tomato", "cucumber", "olive oil", "lemon", "salt"],
+                    "instructions": [
+                        "Wash and tear greens into bite-size pieces",
+                        "Chop tomato and cucumber",
+                        "Toss everything together in a bowl",
+                        "Dress with olive oil, lemon juice, and salt"
+                    ],
+                    "prep_time": "5 minutes",
+                },
+            },
+            # ── Flour ──
+            {
+                "match": {"flour"},
+                "recipe": {
+                    "name": "Easy Pancakes",
+                    "ingredients": ["flour", "egg", "milk", "sugar", "butter", "baking powder"],
+                    "instructions": [
+                        "Mix flour, sugar, and baking powder in a bowl",
+                        "Whisk in egg and milk until smooth",
+                        "Heat butter in a pan, pour small circles of batter",
+                        "Flip when bubbles form, cook until golden on both sides"
+                    ],
+                    "prep_time": "15 minutes",
+                },
+            },
+            # ── Cheese ──
+            {
+                "match": {"cheese", "butter"},
+                "recipe": {
+                    "name": "Grilled Cheese Sandwich",
+                    "ingredients": ["bread", "cheese", "butter"],
+                    "instructions": [
+                        "Butter one side of each bread slice",
+                        "Place cheese between slices (butter sides out)",
+                        "Grill in a pan over medium heat 2-3 min per side",
+                        "Slice and serve hot"
+                    ],
+                    "prep_time": "10 minutes",
+                },
+            },
+        ]
 
-        if any(item in ['yogurt', 'banana', 'berries', 'strawberry'] for item in items):
-            fallback_recipes.append({
-                "name": "Fruit Smoothie",
-                "ingredients": ["yogurt", "banana", "berries", "honey"],
-                "instructions": [
-                    "Add all ingredients to a blender",
-                    "Blend until smooth",
-                    "Pour into a glass and enjoy"
-                ],
-                "prep_time": "5 minutes",
-                "items_used": [item for item in items if item in ['yogurt', 'banana', 'berries']]
-            })
+        for entry in catalog:
+            if lower_items & entry["match"]:
+                recipe = dict(entry["recipe"])
+                recipe["items_used"] = sorted(lower_items & entry["match"])
+                matched.append(recipe)
 
-        return fallback_recipes[:3]
+        return matched[:5]
 
     def generate_shopping_suggestions(self, inventory_items: List[str],
                                      scan_history: List[dict]) -> List[dict]:

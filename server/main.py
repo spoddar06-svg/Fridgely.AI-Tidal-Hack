@@ -26,7 +26,7 @@ from pathlib import Path
 from database import connect_to_mongo, close_mongo_connection, get_database
 from models import (
     InventoryItem, Scan, DetectionResult, ScanResponse,
-    ExpiringItemsResponse, RecipeResponse, Recipe, StatsResponse
+    ExpiringItemsResponse, RecipeRequest, RecipeResponse, Recipe, StatsResponse
 )
 from utils.food_detector import FoodDetector
 from utils.date_extractor import DateExtractor
@@ -545,6 +545,55 @@ async def get_recipes(user_id: str, days: int = 3):
         raise
     except Exception as e:
         print(f"❌ Recipe generation error for '{user_id}': {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate recipes: {str(e)}")
+
+
+@app.post("/api/get-recipes")
+async def get_recipes_from_items(body: RecipeRequest):
+    """
+    Generate recipes from an explicit list of ingredient names.
+
+    Body: {"items": ["apple", "milk", "egg"]}
+    """
+    items = [name.strip() for name in body.items if name.strip()]
+
+    if not items:
+        return JSONResponse(content={
+            "error": "No items provided",
+            "recipes": [],
+            "expiring_items_used": [],
+            "message": "Send at least one ingredient name.",
+        })
+
+    print(f"📋 POST /api/get-recipes — items ({len(items)}): {items}")
+
+    if app.state.gemini_helper is None:
+        raise HTTPException(status_code=503, detail="Gemini AI is not available. Set GEMINI_API_KEY.")
+
+    try:
+        recipes = app.state.gemini_helper.generate_recipes(items, max_recipes=3)
+
+        if not recipes:
+            return JSONResponse(content={
+                "error": "Gemini returned empty",
+                "recipes": [],
+                "expiring_items_used": items,
+                "message": "Could not generate recipes right now. Try again later.",
+            })
+
+        recipe_objects = [Recipe(**recipe) for recipe in recipes]
+        print(f"🍳 Generated {len(recipe_objects)} recipes from {len(items)} items")
+
+        return RecipeResponse(
+            recipes=recipe_objects,
+            expiring_items_used=items,
+            message=f"Here are {len(recipe_objects)} recipes using your items!"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ POST recipe generation error: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate recipes: {str(e)}")
 
 

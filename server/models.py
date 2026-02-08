@@ -99,6 +99,11 @@ class ExpiringItemsResponse(BaseModel):
     urgency_breakdown: dict  # {"today": 2, "tomorrow": 3, "this_week": 5}
 
 
+class RecipeRequest(BaseModel):
+    """Request body for recipe generation from specific items"""
+    items: List[str]
+
+
 class RecipeResponse(BaseModel):
     """Response for recipe generation"""
     recipes: List[Recipe]

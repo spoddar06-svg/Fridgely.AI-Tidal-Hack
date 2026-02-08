@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Recipe, RecipeDifficulty } from '../types';
+import type { Recipe, RecipeDifficulty, InventoryItem } from '../types';
+import { useInventory } from '../hooks/useInventory';
+import { recipesApi } from '../api/endpoints/recipes';
 import RecipeCard from '../components/features/Recipes/RecipeCard';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/ui/EmptyState';
@@ -180,6 +182,37 @@ function Toast({
   );
 }
 
+/* ---- Helpers ---- */
+
+const EXPIRING_DAYS = 3;
+
+function getDaysUntil(date: string): number {
+  if (!date) return Infinity;
+  const exp = new Date(date);
+  if (Number.isNaN(exp.getTime())) return Infinity;
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  exp.setHours(0, 0, 0, 0);
+  return Math.ceil((exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+/** Extract unique item names, prioritizing items expiring within EXPIRING_DAYS */
+function getItemNames(items: InventoryItem[]): { expiring: string[]; all: string[] } {
+  const expiringSet = new Set<string>();
+  const allSet = new Set<string>();
+
+  for (const item of items) {
+    const name = item.item_name.toLowerCase().trim();
+    if (!name) continue;
+    allSet.add(name);
+    if (getDaysUntil(item.expiration_date) <= EXPIRING_DAYS) {
+      expiringSet.add(name);
+    }
+  }
+
+  return { expiring: [...expiringSet], all: [...allSet] };
+}
+
 /* ---- Component ---- */
 
 export default function RecipesPage() {
@@ -196,63 +229,39 @@ export default function RecipesPage() {
   const [expiringOnly, setExpiringOnly] = useState(false);
   const [difficulty, setDifficulty] = useState<DifficultyFilter>('all');
 
+  // Inventory data
+  const { data: inventoryItems = [], isLoading: inventoryLoading } = useInventory(USER_ID);
+
+  const itemNames = useMemo(() => getItemNames(inventoryItems), [inventoryItems]);
+
   /* ---- Generate recipes ---- */
 
   const handleGenerate = useCallback(async () => {
     setStatus('loading');
     setError('');
-    let mapped: Recipe[] = [];
+    let result: Recipe[] = [];
     let failed = false;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 30_000);
-
-      const res = await fetch(
-        `/api/recipes/${USER_ID}?days=7`,
-        { signal: controller.signal },
-      );
-      clearTimeout(timeout);
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(
-          data.detail || data.message || `Server error ${res.status}`,
-        );
+      if (itemNames.all.length === 0) {
+        throw new Error('Your fridge is empty! Scan some food first.');
       }
 
-      const rawRecipes = data.recipes ?? [];
-      mapped = rawRecipes.map(
-        (raw: { name: string; prep_time: string; ingredients: string[]; instructions: string[]; items_used: string[] }, i: number): Recipe => ({
-          id: `generated-${i}`,
-          name: raw.name,
-          prep_time_minutes: parseInt(raw.prep_time, 10) || 0,
-          ingredients: (raw.ingredients ?? []).map((name: string) => ({
-            name,
-            amount: 1,
-            in_inventory: true,
-          })),
-          instructions: raw.instructions ?? [],
-          uses_expiring_items: raw.items_used ?? [],
-        }),
-      );
+      // Send all items — expiring items listed first so Gemini prioritizes them
+      const expiringSet = new Set(itemNames.expiring);
+      const nonExpiring = itemNames.all.filter((n) => !expiringSet.has(n));
+      const names = [...itemNames.expiring, ...nonExpiring];
+
+      result = await recipesApi.generate(names);
     } catch (err) {
       failed = true;
-      const msg =
-        err instanceof DOMException && err.name === 'AbortError'
-          ? 'Request timed out. Is the backend running?'
-          : err instanceof Error
-            ? err.message
-            : 'Something went wrong.';
+      const msg = err instanceof Error ? err.message : 'Something went wrong.';
       setError(msg);
-      console.error('[RecipesPage] generate failed:', err);
     } finally {
-      // Guarantee we ALWAYS exit loading — no matter what happened above
-      setRecipes(mapped);
+      setRecipes(result);
       setStatus(failed ? 'error' : 'loaded');
     }
-  }, []);
+  }, [itemNames]);
 
   /* ---- Cook handler ---- */
 
@@ -298,6 +307,7 @@ export default function RecipesPage() {
           size="md"
           leftIcon={<SparkleIcon />}
           isLoading={status === 'loading'}
+          disabled={inventoryLoading || itemNames.all.length === 0}
           onClick={handleGenerate}
           className="hidden md:inline-flex"
         >
@@ -404,14 +414,42 @@ export default function RecipesPage() {
         </p>
       )}
 
+      {/* ── Inventory info ── */}
+      {!inventoryLoading && status === 'empty' && itemNames.all.length > 0 && (
+        <p className="text-sm text-neutral-500">
+          {itemNames.expiring.length > 0
+            ? `${itemNames.expiring.length} item${itemNames.expiring.length === 1 ? '' : 's'} expiring soon — recipes will prioritize these.`
+            : `${itemNames.all.length} item${itemNames.all.length === 1 ? '' : 's'} in your fridge.`}
+        </p>
+      )}
+
       {/* ── Content ── */}
 
-      {/* Empty state */}
-      {status === 'empty' && (
+      {/* Empty state — no inventory at all */}
+      {status === 'empty' && !inventoryLoading && itemNames.all.length === 0 && (
+        <EmptyState
+          icon={<CameraIcon />}
+          title="Your fridge is empty!"
+          description="Scan some food first so we can generate recipes from your ingredients."
+          action={
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<CameraIcon />}
+              onClick={() => navigate('/scan')}
+            >
+              Scan Your Fridge
+            </Button>
+          }
+        />
+      )}
+
+      {/* Empty state — has inventory, ready to generate */}
+      {status === 'empty' && !inventoryLoading && itemNames.all.length > 0 && (
         <EmptyState
           icon={<BookOpenIcon />}
           title="No recipes yet"
-          description='Click "Get New Recipes" to generate meal ideas based on your fridge inventory.'
+          description='Click "Get New Recipes" to generate meal ideas from your scanned items.'
           action={
             <Button
               variant="primary"
@@ -520,6 +558,7 @@ export default function RecipesPage() {
           size="lg"
           leftIcon={<SparkleIcon />}
           isLoading={status === 'loading'}
+          disabled={inventoryLoading || itemNames.all.length === 0}
           onClick={handleGenerate}
           fullWidth
           className="min-h-[44px] shadow-medium"
