@@ -97,10 +97,10 @@ app = FastAPI(
 )
 
 # Configure CORS for React frontend
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url, "http://localhost:3000", "http://localhost:5173"],
+    allow_origins=[frontend_url, "http://localhost:3000", "http://localhost:5173", "http://localhost:5175"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -190,41 +190,15 @@ async def scan_fridge(
         if not detections:
             raise HTTPException(status_code=400, detail="No items detected. Try getting closer or improving lighting.")
 
-        # Step 2: Extract expiration dates for each detection
+        # Step 2: Build detection results and store in inventory
         detected_items = []
 
         for detection in detections:
-            # Crop the detected region
-            cropped = app.state.food_detector.crop_detection(file_path, detection["bounding_box"])
-
-            # Try to extract expiration date with OCR
-            expiration_date = None
-            if cropped is not None:
-                # Save cropped image temporarily
-                crop_path = f"uploads/crop_{int(time.time())}.jpg"
-                import cv2
-                cv2.imwrite(crop_path, cropped)
-
-                # Run OCR on cropped region
-                if app.state.date_extractor is not None:
-                    expiration_date = app.state.date_extractor.extract_date_from_image(crop_path)
-
-                # Fallback to Gemini if OCR fails
-                if not expiration_date and detection["confidence"] < 0.7 and app.state.gemini_helper is not None:
-                    expiration_date = app.state.gemini_helper.extract_expiration_date(crop_path)
-
-                # Clean up cropped image
-                try:
-                    os.remove(crop_path)
-                except:
-                    pass
-
-            # Create detection result
             detected_item = DetectionResult(
                 item_name=detection["item_name"],
                 confidence=detection["confidence"],
                 bounding_box=detection["bounding_box"],
-                expiration_date=expiration_date
+                expiration_date=None
             )
             detected_items.append(detected_item)
 
@@ -232,13 +206,11 @@ async def scan_fridge(
             inventory_item = InventoryItem(
                 user_id=user_id,
                 item_name=detection["item_name"],
-                expiration_date=datetime.fromisoformat(expiration_date) if expiration_date else None,
                 confidence_score=detection["confidence"],
                 image_url=file_path,
                 status="active"
             )
 
-            # Insert into database
             await db.inventory_items.insert_one(inventory_item.model_dump(by_alias=True, exclude=['id']))
 
         # Step 3: Record the scan in database
