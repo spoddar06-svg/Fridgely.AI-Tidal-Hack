@@ -173,7 +173,7 @@ export async function upload<T>(
   console.log('[upload] Starting fetch to', fullUrl);
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30_000);
+  const timeoutId = setTimeout(() => controller.abort(), 20_000);
 
   let response: Response;
   try {
@@ -185,7 +185,7 @@ export async function upload<T>(
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof DOMException && err.name === 'AbortError') {
-      console.error('[upload] Request timed out after 30s');
+      console.error('[upload] Request timed out after 20s');
       throw new ApiError(408, 'Upload timed out. Try a smaller image or check your connection.');
     }
     console.error('[upload] fetch() threw:', err);

@@ -203,6 +203,9 @@ export default function ScanPage() {
           if (error.status === 400) {
             setErrorType('no_items');
             setErrorDetail(detail);
+          } else if (error.status === 408) {
+            setErrorType('no_items');
+            setErrorDetail(detail || 'Processing took too long. The image may be invalid. Try a clearer photo.');
           } else if (error.status === 0) {
             setErrorType('network');
           } else {

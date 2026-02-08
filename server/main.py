@@ -19,6 +19,7 @@ import shutil
 from datetime import datetime, timedelta
 from typing import List, Optional
 import time
+import asyncio
 from pathlib import Path
 
 # Import our modules
@@ -192,7 +193,24 @@ async def scan_fridge(
         if app.state.food_detector is None:
             raise HTTPException(status_code=503, detail="Food detector is not available. Check server logs.")
 
-        detections = app.state.food_detector.detect_items(file_path, confidence_threshold=0.4)
+        # Run detection in a thread with a timeout so bad/complex images
+        # don't hang the request forever (25s server-side, client aborts at 30s).
+        DETECTION_TIMEOUT = 15  # seconds
+        try:
+            detections = await asyncio.wait_for(
+                asyncio.to_thread(
+                    app.state.food_detector.detect_items,
+                    file_path,
+                    0.4,
+                ),
+                timeout=DETECTION_TIMEOUT,
+            )
+        except asyncio.TimeoutError:
+            print(f"⏱️ Detection timed out after {DETECTION_TIMEOUT}s for {file_path}")
+            raise HTTPException(
+                status_code=408,
+                detail="Processing took too long. The image may be invalid or too complex. Try a clearer photo of your fridge.",
+            )
 
         if not detections:
             raise HTTPException(status_code=400, detail="No items detected. Try getting closer or improving lighting.")
