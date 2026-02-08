@@ -67,6 +67,9 @@ export default function Input({
   const autoId = useId();
   const inputId = id ?? (label ? `input-${autoId}` : undefined);
   const resolvedVariant: InputVariant = error ? 'error' : variant;
+  const errorId = error ? `${autoId}-error` : undefined;
+  const helperId = !error && helperText ? `${autoId}-helper` : undefined;
+  const describedBy = [errorId, helperId].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className={fullWidth ? 'w-full' : 'inline-flex flex-col'}>
@@ -98,6 +101,8 @@ export default function Input({
         <input
           id={inputId}
           disabled={disabled}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
           className={[
             'border bg-white text-neutral-900 placeholder:text-neutral-400',
             'transition-all duration-200 ease-in-out',
@@ -130,10 +135,10 @@ export default function Input({
 
       {/* Error or helper text */}
       {error && (
-        <p className="mt-1.5 text-sm text-danger">{error}</p>
+        <p id={errorId} role="alert" className="mt-1.5 text-sm text-danger">{error}</p>
       )}
       {!error && helperText && (
-        <p className="mt-1.5 text-sm text-neutral-500">{helperText}</p>
+        <p id={helperId} className="mt-1.5 text-sm text-neutral-500">{helperText}</p>
       )}
     </div>
   );

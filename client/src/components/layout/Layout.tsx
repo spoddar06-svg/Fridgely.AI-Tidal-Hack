@@ -175,6 +175,11 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-dvh flex flex-col bg-neutral-50">
+      {/* ── Skip link ── */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
       {/* ── Sticky header ── */}
       <header
         className={[
@@ -188,6 +193,7 @@ export default function Layout({ children }: LayoutProps) {
         <button
           type="button"
           onClick={() => navigate('/')}
+          aria-label="FridgeTrack — Go to dashboard"
           className={[
             'flex items-center gap-2.5',
             'text-brand-700 hover:text-brand-800',
@@ -198,6 +204,8 @@ export default function Layout({ children }: LayoutProps) {
           <LogoIcon />
           <span className="text-lg font-bold tracking-tight">FridgeTrack</span>
         </button>
+        {/* sr-only app title for screen readers */}
+        <h1 className="sr-only">FridgeTrack</h1>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
@@ -229,6 +237,7 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* ── Main content ── */}
       <main
+        id="main-content"
         className={[
           'flex-1 w-full max-w-6xl mx-auto',
           'px-4 md:px-6 lg:px-8',

@@ -191,8 +191,8 @@
     color: var(--color-brand-900);
   }
 
-  /* ---- Focus: remove default, apply branded ring ---- */
-  :focus {
+  /* ---- Focus: remove default outline for mouse/touch, keep for keyboard ---- */
+  :focus:not(:focus-visible) {
     outline: none;
   }
 

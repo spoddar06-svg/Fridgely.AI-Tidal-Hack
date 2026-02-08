@@ -1,4 +1,4 @@
-import { type HTMLAttributes, type ReactNode } from 'react';
+import { type HTMLAttributes, type KeyboardEvent, type ReactNode } from 'react';
 
 /* ---- Types ---- */
 
@@ -56,10 +56,22 @@ export default function Card({
   fullWidth = false,
   children,
   className = '',
+  onClick,
   ...rest
 }: CardProps) {
+  const handleKeyDown = interactive
+    ? (e: KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+        }
+      }
+    : undefined;
+
   return (
     <div
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
       className={[
         'rounded-xl overflow-hidden',
         'transition-all duration-200 ease-in-out',

@@ -105,7 +105,7 @@ export default function Button({
     <button
       disabled={isDisabled}
       aria-busy={isLoading || undefined}
-      aria-label={isLoading ? 'Loading, please wait' : undefined}
+      aria-disabled={isDisabled || undefined}
       className={[
         // layout
         'inline-flex items-center justify-center',
@@ -138,10 +138,16 @@ export default function Button({
       )}
 
       {/* Label — keep in DOM while loading to stabilise width */}
-      <span className={isLoading ? 'opacity-0 h-0 overflow-hidden' : undefined}>
-        {children}
-      </span>
-      {isLoading && <span>{children}</span>}
+      {isLoading ? (
+        <>
+          <span className="opacity-0 h-0 overflow-hidden" aria-hidden="true">
+            {children}
+          </span>
+          <span>{children}</span>
+        </>
+      ) : (
+        <span>{children}</span>
+      )}
 
       {/* Right icon — hide while loading */}
       {!isLoading && rightIcon && (

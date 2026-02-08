@@ -178,7 +178,7 @@ export default function InventoryItemCard({
                 'px-1.5 py-0.5 text-xs font-medium',
                 'rounded-full bg-warning-light text-warning-dark border border-warning',
               ].join(' ')}
-              title={`Confidence: ${Math.round(item.confidence_score * 100)}%`}
+              aria-label={`Low confidence: ${Math.round(item.confidence_score * 100)}%`}
             >
               <AlertIcon />
               {Math.round(item.confidence_score * 100)}%

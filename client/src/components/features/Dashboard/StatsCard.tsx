@@ -161,12 +161,13 @@ export default function StatsCard({
                   'text-xs font-semibold rounded-full',
                   trendStyles[trend.direction],
                 ].join(' ')}
+                aria-label={`${trend.direction === 'up' ? 'Up' : 'Down'} ${trend.value}%${trend.label ? ` ${trend.label}` : ''}`}
               >
                 {trend.direction === 'up' ? <TrendUpIcon /> : <TrendDownIcon />}
-                {trend.value}%
+                <span aria-hidden="true">{trend.value}%</span>
               </span>
               {trend.label && (
-                <span className="text-xs text-neutral-400">{trend.label}</span>
+                <span className="text-xs text-neutral-400" aria-hidden="true">{trend.label}</span>
               )}
             </div>
           )}

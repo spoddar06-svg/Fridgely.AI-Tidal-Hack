@@ -32,7 +32,7 @@ export default function EmptyState({
     >
       {/* Illustration (takes priority over icon) */}
       {illustration ? (
-        <div className="mb-5">{illustration}</div>
+        <div className="mb-5" aria-hidden="true">{illustration}</div>
       ) : icon ? (
         <div
           className={[
@@ -40,6 +40,7 @@ export default function EmptyState({
             'w-16 h-16 rounded-full',
             'bg-brand-100 text-brand-600',
           ].join(' ')}
+          aria-hidden="true"
         >
           {icon}
         </div>
