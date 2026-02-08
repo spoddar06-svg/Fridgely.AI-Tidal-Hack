@@ -14,9 +14,14 @@ load_dotenv()
 
 
 # Mock food items returned when Roboflow is not available
+# Items match the classes from dataset_yolo/data.yaml
 MOCK_FOOD_ITEMS = [
-    "apple", "banana", "milk", "cheese", "yogurt",
-    "lettuce", "tomato", "eggs", "bread", "orange juice",
+    "apple", "banana", "blue berry", "bread", "brinjal",
+    "butter", "cabbage", "capsicum", "carrot", "cheese",
+    "chicken", "chocolate", "corn", "cucumber", "egg",
+    "flour", "fresh cream", "ginger", "green beans", "green chilly",
+    "green leaves", "lemon", "meat", "milk", "mushroom",
+    "potato", "shrimp", "stawberry", "sweet potato", "tomato",
 ]
 
 
