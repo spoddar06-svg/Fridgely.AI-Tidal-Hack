@@ -8,7 +8,7 @@
 
 ![Frigley AI Dashboard](screenshots/dashboard.png)
 
-**[Watch Demo](https://www.youtube.com/watch?v=kU2mamjU3Tg)** • **[Report Bug](https://github.com/yourusername/frigley-ai/issues)** • **[Request Feature](https://github.com/yourusername/frigley-ai/issues)**
+**[Watch Demo](https://www.youtube.com/watch?v=kU2mamjU3Tg)** • **[Report Bug](https://github.com/yourusername/2026-Tidal-Hack/issues)** • **[Request Feature](https://github.com/yourusername/2026-Tidal-Hack/issues)**
 
 </div>
 
@@ -16,13 +16,13 @@
 
 ## 📖 About The Project
 
-We've all been there—staring into an open fridge, wondering what to cook, or throwing away expired produce we forgot we bought. **Frigley AI** was built to solve the "What's for dinner?" problem while tackling household food waste head-on.
+We've all been there—staring into an open fridge, wondering what to cook, or throwing away expired produce we forgot we bought. **Fridgely AI** was built to solve the "What's for dinner?" problem while tackling household food waste head-on.
 
 ### ✨ Key Features
 
 - **📸 AI-Powered Recognition** – Upload a photo of your fridge or groceries, and our Computer Vision model (YOLOv8) automatically identifies ingredients and logs them to your inventory
 - **⚠️ Smart Expiry Tracking** – Automatically estimates shelf life and alerts you before your food goes bad
-- **🍳 Gemini Recipe Generator** – Powered by Google Gemini, Frigley suggests creative recipes using *only* the ingredients you currently have
+- **🍳 Gemini Recipe Generator** – Powered by Google Gemini, Fridgely suggests creative recipes using *only* the ingredients you currently have
 - **🛒 Automated Shopping Lists** – Generates smart shopping lists to restock essentials or complete a specific recipe
 
 ---
@@ -56,8 +56,8 @@ Before you begin, ensure you have the following installed:
 
 1. **Clone the repository**
 ```bash
-   git clone https://github.com/yourusername/frigley-ai.git
-   cd frigley-ai
+   git clone https://github.com/yourusername/2026-Tidal-Hack.git
+   cd 2026-Tidal-Hack
 ```
 
 2. **Backend Setup**
@@ -109,7 +109,7 @@ Before you begin, ensure you have the following installed:
 
 | Step 1: Scan | Step 2: Review | Step 3: Cook |
 |--------------|----------------|--------------|
-| 📸 Take a picture of your grocery haul | 👀 Watch as Frigley populates your digital fridge | 🍳 Click "Generate Recipe" for a custom meal plan |
+| 📸 Take a picture of your grocery haul | 👀 Watch as Fridgely populates your digital fridge | 🍳 Click "Generate Recipe" for a custom meal plan |
 
 </div>
 
@@ -117,7 +117,7 @@ Before you begin, ensure you have the following installed:
 
 ## 📺 Demo Video
 
-[![Frigley AI Demo](https://img.youtube.com/vi/kU2mamjU3Tg/maxresdefault.jpg)](https://www.youtube.com/watch?v=kU2mamjU3Tg)
+[![Fridley AI Demo](https://img.youtube.com/vi/kU2mamjU3Tg/maxresdefault.jpg)](https://www.youtube.com/watch?v=kU2mamjU3Tg)
 
 *Click the image above to watch the full demo*
 
@@ -135,6 +135,7 @@ Before you begin, ensure you have the following installed:
 
 ---
 
+
 ## 🤝 Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -150,7 +151,6 @@ Contributions are what make the open source community such an amazing place to l
 ## 📄 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
 
 ---
 
