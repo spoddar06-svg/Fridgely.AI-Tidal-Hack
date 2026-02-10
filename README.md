@@ -6,7 +6,6 @@
 
 *Built for Hackathon 2026*
 
-![Frigley AI Dashboard](screenshots/dashboard.png)
 
 **[Watch Demo](https://www.youtube.com/watch?v=kU2mamjU3Tg)** • **[Report Bug](https://github.com/yourusername/2026-Tidal-Hack/issues)** • **[Request Feature](https://github.com/yourusername/2026-Tidal-Hack/issues)**
 
